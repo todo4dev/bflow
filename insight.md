@@ -38,7 +38,7 @@ This use case aims to activate an account using an email address and activation 
 
 ---
 
-### UseCase - Resend email to activate account
+### UseCase - Resend activation email
 
 This use case aims to resend an activation email to an account using an email address and activation code.
 
@@ -104,7 +104,7 @@ This use case aims to login an account using an internal token.
 
 ---
 
-### UseCase - Resend email to reset password
+### UseCase - Resend password recovery email
 
 This use case aims to resend an email to reset password.
 
@@ -1279,4 +1279,3 @@ This use case aims to search execution orders.
 4. **Output**: Returns the execution orders in paginated format.
 
 ---
-

@@ -1,6 +1,6 @@
 [submodule "control-plane/api"]
 	path = control-plane/api
-	url = ./control-plane/api
+	url = https://github.com/todo4dev/bflow_control-plane_api
 [submodule "control-plane/web"]
 	path = control-plane/web
-	url = ./control-plane/web
+	url = https://github.com/todo4dev/bflow_control-plane_web
