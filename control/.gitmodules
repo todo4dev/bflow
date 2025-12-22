@@ -1,6 +1,0 @@
-[submodule "api"]
-	path = api
-	url = https://github.com/todo4dev/bflow_control_api
-[submodule "web"]
-	path = web
-	url = https://github.com/todo4dev/bflow_control_web
