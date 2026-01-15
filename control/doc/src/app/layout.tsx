@@ -1,0 +1,31 @@
+import {Footer, Layout, Navbar} from 'nextra-theme-docs'
+import 'nextra-theme-docs/style.css'
+import {Head} from 'nextra/components'
+import {getPageMap} from 'nextra/page-map'
+
+export const metadata = {
+  // seu metadata aqui (Next Metadata API)
+}
+
+const navbar = <Navbar logo={<b>BFlow</b>} />
+
+const footer = <Footer>MIT {new Date().getFullYear()} © BFlow.</Footer>
+
+export default async function RootLayout({children}: {children: React.ReactNode}) {
+  return (
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <Head />
+      <body>
+        <Layout
+          navbar={navbar}
+          sidebar={{autoCollapse: true}}
+          pageMap={await getPageMap()}
+          docsRepositoryBase="https://github.com/todo4dev/bflow/control/doc"
+          footer={footer}
+        >
+          {children}
+        </Layout>
+      </body>
+    </html>
+  )
+}

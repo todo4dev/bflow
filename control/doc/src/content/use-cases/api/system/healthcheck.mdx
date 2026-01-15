@@ -1,0 +1,54 @@
+---
+title: Healthcheck
+---
+
+# Healthcheck
+
+The Healthcheck API provides a mechanism to monitor the operational status of the system and its core dependencies.
+
+## Description
+
+This endpoint is used by load balancers, container orchestrators, and monitoring services to determine if the application instance is healthy and capable of processing requests.
+
+## Rules
+- The endpoint must be accessed via a `GET` request.
+- The system must perform a connectivity check on the primary database.
+- The system must perform a connectivity check on the cache service.
+- If any critical dependency is unreachable, the system must report an unhealthy status.
+
+## Success Case
+
+**Condition:** All internal components and dependencies are functioning correctly.
+
+- **HTTP Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "status": "UP",
+    "timestamp": "2023-10-27T10:00:00Z",
+    "components": {
+      "database": "UP",
+      "cache": "UP",
+      "stream": "UP"
+    }
+  }
+  ```
+
+## Error Case
+
+**Condition:** One or more critical components are unreachable or failing.
+
+- **HTTP Status:** `503 Service Unavailable`
+- **Response Body:**
+
+  ```json
+  {
+    "status": "DOWN",
+    "timestamp": "2023-10-27T10:00:05Z",
+    "components": {
+      "database": "DOWN",
+      "cache": "UP",
+      "stream": "UP"
+    }
+  }
+  ```
