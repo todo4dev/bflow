@@ -94,13 +94,17 @@ erDiagram
   }
 
   certificate {
-    uuidv7                 id         "pk"
-    timestamptz[3]         ts         ""
-    timestamptz[3]         created_at ""
-    null[timestamptz[3]]   deleted_at ""
-    enum[certificate_kind] kind       ""
-    text                   content    ""
-    uuidv7                 account_id "fk"
+    uuidv7                 id              "pk"
+    timestamptz[3]         ts              ""
+    timestamptz[3]         created_at      ""
+    null[timestamptz[3]]   deleted_at      ""
+    timestamptz[3]         expires_at      ""
+    varchar[100]           display_name    ""
+    varchar[14]            document_number ""
+    varchar[100]           owner_name      ""
+    text                   thumbprint      ""
+    boolean                is_active       ""
+    uuidv7                 account_id      "fk"
   }
 
   cluster {
@@ -191,7 +195,7 @@ erDiagram
     varchar[100]         name               ""
     varchar[100]         slug               ""
     jsonb                config             ""
-    uuidv7               creator_account_id "fk"
+    null[uuidv7]         creator_account_id "fk"
   }
 
   payment {
