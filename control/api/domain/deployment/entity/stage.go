@@ -8,6 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type StageStatusEnum string
+
+const (
+	StageStatusPending StageStatusEnum = "pending"
+	StageStatusRunning StageStatusEnum = "running"
+	StageStatusSuccess StageStatusEnum = "success"
+	StageStatusFailed  StageStatusEnum = "failed"
+)
+
 type StageEntity struct {
 	ID         uuid.UUID       `json:"id"`
 	TS         time.Time       `json:"ts"`
@@ -15,7 +24,7 @@ type StageEntity struct {
 	DeletedAt  *time.Time      `json:"deleted_at"`
 	Name       string          `json:"name"`
 	Position   int             `json:"position"`
-	Status     string          `json:"status"`
+	Status     StageStatusEnum `json:"status"`
 	StartedAt  *time.Time      `json:"started_at"`
 	FinishedAt *time.Time      `json:"finished_at"`
 	Summary    *string         `json:"summary"`
