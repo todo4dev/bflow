@@ -90,7 +90,7 @@ services:
       MINIO_ROOT_PASSWORD: "${DOCKER_MINIO_ROOT_PASSWORD:?DOCKER_MINIO_ROOT_PASSWORD is required}"
     command: "server /data --console-address :9001"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9000/health"]
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -99,7 +99,7 @@ services:
   control-minio-create-bucket:
     image: "minio/mc:latest"
     hostname: "minio-create-bucket"
-    container_name: "control-minio-setup"
+    container_name: "control-minio-create-bucket"
     networks: [ "control" ]
     depends_on:
       control-minio:
