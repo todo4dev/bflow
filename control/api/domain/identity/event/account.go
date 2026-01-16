@@ -2,67 +2,85 @@
 package event
 
 import (
-	"src/domain/shared"
+	"src/domain"
 
 	"github.com/google/uuid"
 )
 
-type AccountEventEnum string
+type Account string
 
 const (
-	AccountEvent_Registered        AccountEventEnum = "AccountEvent_Registered"
-	AccountEvent_RoleSet           AccountEventEnum = "AccountEvent_RoleSet"
-	AccountEvent_Activated         AccountEventEnum = "AccountEvent_Activated"
-	AccountEvent_CredentialChanged AccountEventEnum = "AccountEvent_CredentialChanged"
+	Account_REGISTERED         Account = "account.registered"
+	Account_ROLE_SET           Account = "account.role_set"
+	Account_ACTIVATED          Account = "account.activated"
+	Account_CREDENTIAL_CHANGED Account = "account.credential_changed"
 )
 
-type AccountRegisteredEventPayload struct {
+type AccountRegisteredPayload struct {
 	Email string `json:"email"`
 }
 
-func AccountRegisteredEvent(email string) shared.Event[AccountEventEnum] {
-	return shared.NewEvent(
-		AccountEvent_Registered,
-		AccountRegisteredEventPayload{Email: email},
+func AccountRegistered(
+	email string,
+) domain.Event[Account] {
+	return domain.NewEvent(
+		Account_REGISTERED,
+		AccountRegisteredPayload{
+			Email: email,
+		},
 	)
 }
 
-type AccountRoleSetEventPayload struct {
+type AccountRoleSetPayload struct {
 	AccountID uuid.UUID `json:"account_id"`
 	Role      string    `json:"role"`
 }
 
-func AccountRoleSetEvent(accountID uuid.UUID, role string) shared.Event[AccountEventEnum] {
-	return shared.NewEvent(
-		AccountEvent_RoleSet,
-		AccountRoleSetEventPayload{AccountID: accountID, Role: role},
+func AccountRoleSet(
+	accountID uuid.UUID,
+	role string,
+) domain.Event[Account] {
+	return domain.NewEvent(
+		Account_ROLE_SET,
+		AccountRoleSetPayload{
+			AccountID: accountID,
+			Role:      role,
+		},
 	)
 }
 
-type AccountActivatedEventPayload struct {
+type AccountActivatedPayload struct {
 	AccountID uuid.UUID `json:"account_id"`
 }
 
-func AccountActivatedEvent(accountID uuid.UUID) shared.Event[AccountEventEnum] {
-	return shared.NewEvent(
-		AccountEvent_Activated,
-		AccountActivatedEventPayload{AccountID: accountID},
+func AccountActivated(
+	accountID uuid.UUID,
+) domain.Event[Account] {
+	return domain.NewEvent(
+		Account_ACTIVATED,
+		AccountActivatedPayload{
+			AccountID: accountID,
+		},
 	)
 }
 
-type AccountCredentialChangedEventPayload struct {
+type AccountCredentialChangedPayload struct {
 	AccountID uuid.UUID `json:"account_id"`
 }
 
-func AccountCredentialChangedEvent(accountID uuid.UUID) shared.Event[AccountEventEnum] {
-	return shared.NewEvent(
-		AccountEvent_CredentialChanged,
-		AccountCredentialChangedEventPayload{AccountID: accountID},
+func AccountCredentialChanged(
+	accountID uuid.UUID,
+) domain.Event[Account] {
+	return domain.NewEvent(
+		Account_CREDENTIAL_CHANGED,
+		AccountCredentialChangedPayload{
+			AccountID: accountID,
+		},
 	)
 }
 
-var AccountEventMapper = shared.NewEventMapper[AccountEventEnum]().
-	Decoder(AccountEvent_Registered, shared.JSONDecoder[AccountRegisteredEventPayload]()).
-	Decoder(AccountEvent_RoleSet, shared.JSONDecoder[AccountRoleSetEventPayload]()).
-	Decoder(AccountEvent_Activated, shared.JSONDecoder[AccountActivatedEventPayload]()).
-	Decoder(AccountEvent_CredentialChanged, shared.JSONDecoder[AccountCredentialChangedEventPayload]())
+var AccountMapper = domain.NewEventMapper[Account]().
+	Decoder(Account_REGISTERED, domain.JSONDecoder[AccountRegisteredPayload]()).
+	Decoder(Account_ROLE_SET, domain.JSONDecoder[AccountRoleSetPayload]()).
+	Decoder(Account_ACTIVATED, domain.JSONDecoder[AccountActivatedPayload]()).
+	Decoder(Account_CREDENTIAL_CHANGED, domain.JSONDecoder[AccountCredentialChangedPayload]())

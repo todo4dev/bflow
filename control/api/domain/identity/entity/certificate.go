@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type CertificateEntity struct {
+type Certificate struct {
 	ID             uuid.UUID  `json:"id"`
 	TS             time.Time  `json:"ts"`
 	CreatedAt      time.Time  `json:"created_at"`
@@ -22,15 +22,15 @@ type CertificateEntity struct {
 	AccountID      uuid.UUID  `json:"account_id"`
 }
 
-var _ json.Marshaler = (*CertificateEntity)(nil)
-var _ json.Unmarshaler = (*CertificateEntity)(nil)
+var _ json.Marshaler = (*Certificate)(nil)
+var _ json.Unmarshaler = (*Certificate)(nil)
 
-func (e *CertificateEntity) MarshalJSON() ([]byte, error) {
-	type Alias CertificateEntity
+func (e *Certificate) MarshalJSON() ([]byte, error) {
+	type Alias Certificate
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *CertificateEntity) UnmarshalJSON(data []byte) error {
-	type Alias CertificateEntity
+func (e *Certificate) UnmarshalJSON(data []byte) error {
+	type Alias Certificate
 	return json.Unmarshal(data, (*Alias)(e))
 }

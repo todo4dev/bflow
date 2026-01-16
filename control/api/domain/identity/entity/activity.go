@@ -3,37 +3,32 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/identity/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Activity_TypeEnum string
-
-const (
-	Activity_TypeUnknown Activity_TypeEnum = "unknown"
-)
-
-type ActivityEntity struct {
+type Activity struct {
 	ID        uuid.UUID         `json:"id"`
 	TS        time.Time         `json:"ts"`
 	CreatedAt time.Time         `json:"created_at"`
-	Type      Activity_TypeEnum `json:"type"`
+	Kind      enum.ActivityKind `json:"kind"`
 	Message   *string           `json:"message"`
 	Metadata  *json.RawMessage  `json:"metadata"`
 	AccountID *uuid.UUID        `json:"account_id"`
 	ClusterID uuid.UUID         `json:"cluster_id"`
 }
 
-var _ json.Marshaler = (*ActivityEntity)(nil)
-var _ json.Unmarshaler = (*ActivityEntity)(nil)
+var _ json.Marshaler = (*Activity)(nil)
+var _ json.Unmarshaler = (*Activity)(nil)
 
-func (e *ActivityEntity) MarshalJSON() ([]byte, error) {
-	type Alias ActivityEntity
+func (e *Activity) MarshalJSON() ([]byte, error) {
+	type Alias Activity
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *ActivityEntity) UnmarshalJSON(data []byte) error {
-	type Alias ActivityEntity
+func (e *Activity) UnmarshalJSON(data []byte) error {
+	type Alias Activity
 	return json.Unmarshal(data, (*Alias)(e))
 }

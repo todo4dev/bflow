@@ -1,5 +1,5 @@
-// domain/shared/issue.go
-package shared
+// domain/issue.go
+package domain
 
 import (
 	"reflect"

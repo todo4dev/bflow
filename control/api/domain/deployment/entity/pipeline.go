@@ -3,34 +3,19 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/deployment/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Pipeline_TypeEnum string
-
-const (
-	Pipeline_TypeBuild  Pipeline_TypeEnum = "build"
-	Pipeline_TypeDeploy Pipeline_TypeEnum = "deploy"
-)
-
-type Pipeline_StatusEnum string
-
-const (
-	Pipeline_StatusPending   Pipeline_StatusEnum = "pending"
-	Pipeline_StatusSucceeded Pipeline_StatusEnum = "succeeded"
-	Pipeline_StatusFailed    Pipeline_StatusEnum = "failed"
-	Pipeline_StatusCanceled  Pipeline_StatusEnum = "canceled"
-)
-
-type PipelineEntity struct {
+type Pipeline struct {
 	ID                 uuid.UUID           `json:"id"`
 	TS                 time.Time           `json:"ts"`
 	CreatedAt          time.Time           `json:"created_at"`
 	DeletedAt          *time.Time          `json:"deleted_at"`
-	Type               Pipeline_TypeEnum   `json:"type"`
-	Status             Pipeline_StatusEnum `json:"status"`
+	Kind               enum.PipelineKind   `json:"kind"`
+	Status             enum.PipelineStatus `json:"status"`
 	Payload            *json.RawMessage    `json:"payload"`
 	StartedAt          *time.Time          `json:"started_at"`
 	FinishedAt         *time.Time          `json:"finished_at"`
@@ -41,15 +26,15 @@ type PipelineEntity struct {
 	PreviousPipelineID *uuid.UUID          `json:"previous_pipeline_id"`
 }
 
-var _ json.Marshaler = (*PipelineEntity)(nil)
-var _ json.Unmarshaler = (*PipelineEntity)(nil)
+var _ json.Marshaler = (*Pipeline)(nil)
+var _ json.Unmarshaler = (*Pipeline)(nil)
 
-func (e *PipelineEntity) MarshalJSON() ([]byte, error) {
-	type Alias PipelineEntity
+func (e *Pipeline) MarshalJSON() ([]byte, error) {
+	type Alias Pipeline
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *PipelineEntity) UnmarshalJSON(data []byte) error {
-	type Alias PipelineEntity
+func (e *Pipeline) UnmarshalJSON(data []byte) error {
+	type Alias Pipeline
 	return json.Unmarshal(data, (*Alias)(e))
 }

@@ -1,3 +1,4 @@
+// infrastructure/mailing/mailer.go
 // application/port/mailing/mailer.go
 package mailing
 

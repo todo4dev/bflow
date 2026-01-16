@@ -1,5 +1,5 @@
-// domain/shared/aggregate.go
-package shared
+// domain/aggregate.go
+package domain
 
 type Aggregate[TKind ~string] struct {
 	events []Event[TKind]

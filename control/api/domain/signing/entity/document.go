@@ -3,39 +3,22 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/signing/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Document_KindEnum string
-
-const (
-	Document_KindAgreement Document_KindEnum = "agreement"
-	Document_KindInvoice   Document_KindEnum = "invoice"
-	Document_KindReceipt   Document_KindEnum = "receipt"
-	Document_KindReport    Document_KindEnum = "report"
-	Document_KindOther     Document_KindEnum = "other"
-)
-
-type Document_StatusEnum string
-
-const (
-	Document_StatusActive   Document_StatusEnum = "active"
-	Document_StatusReplaced Document_StatusEnum = "replaced"
-	Document_StatusRevoked  Document_StatusEnum = "revoked"
-)
-
-type DocumentEntity struct {
+type Document struct {
 	ID                 uuid.UUID           `json:"id"`
 	TS                 time.Time           `json:"ts"`
 	CreatedAt          time.Time           `json:"created_at"`
 	DeletedAt          *time.Time          `json:"deleted_at"`
-	Kind               Document_KindEnum   `json:"kind"`
-	Status             Document_StatusEnum `json:"status"`
+	Kind               enum.DocumentKind   `json:"kind"`
+	Status             enum.DocumentStatus `json:"status"`
 	Title              string              `json:"title"`
 	StorageKey         string              `json:"storage_key"`
-	MimeType           string              `json:"mime_type"`
+	Mimetype           string              `json:"mimetype"`
 	FileSize           int64               `json:"file_size"`
 	ContentSHA256      string              `json:"content_sha256"`
 	Metadata           json.RawMessage     `json:"metadata"`
@@ -43,15 +26,15 @@ type DocumentEntity struct {
 	OrganizationID     *uuid.UUID          `json:"organization_id"`
 }
 
-var _ json.Marshaler = (*DocumentEntity)(nil)
-var _ json.Unmarshaler = (*DocumentEntity)(nil)
+var _ json.Marshaler = (*Document)(nil)
+var _ json.Unmarshaler = (*Document)(nil)
 
-func (e *DocumentEntity) MarshalJSON() ([]byte, error) {
-	type Alias DocumentEntity
+func (e *Document) MarshalJSON() ([]byte, error) {
+	type Alias Document
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *DocumentEntity) UnmarshalJSON(data []byte) error {
-	type Alias DocumentEntity
+func (e *Document) UnmarshalJSON(data []byte) error {
+	type Alias Document
 	return json.Unmarshal(data, (*Alias)(e))
 }

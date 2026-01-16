@@ -3,37 +3,29 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/tenant/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Membership_RoleEnum string
-
-const (
-	Membership_RoleAdmin   Membership_RoleEnum = "admin"
-	Membership_RoleManager Membership_RoleEnum = "manager"
-	Membership_RoleViewer  Membership_RoleEnum = "viewer"
-	Membership_RoleMember  Membership_RoleEnum = "member"
-)
-
-type MembershipEntity struct {
-	ID             uuid.UUID `json:"id"`
-	TS             time.Time `json:"ts"`
-	Role           string    `json:"role"`
-	AccountID      uuid.UUID `json:"account_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
+type Membership struct {
+	ID             uuid.UUID           `json:"id"`
+	TS             time.Time           `json:"ts"`
+	Role           enum.MembershipRole `json:"role"`
+	AccountID      uuid.UUID           `json:"account_id"`
+	OrganizationID uuid.UUID           `json:"organization_id"`
 }
 
-var _ json.Marshaler = (*MembershipEntity)(nil)
-var _ json.Unmarshaler = (*MembershipEntity)(nil)
+var _ json.Marshaler = (*Membership)(nil)
+var _ json.Unmarshaler = (*Membership)(nil)
 
-func (e *MembershipEntity) MarshalJSON() ([]byte, error) {
-	type Alias MembershipEntity
+func (e *Membership) MarshalJSON() ([]byte, error) {
+	type Alias Membership
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *MembershipEntity) UnmarshalJSON(data []byte) error {
-	type Alias MembershipEntity
+func (e *Membership) UnmarshalJSON(data []byte) error {
+	type Alias Membership
 	return json.Unmarshal(data, (*Alias)(e))
 }

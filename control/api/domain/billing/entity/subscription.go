@@ -1,30 +1,20 @@
-// subscription
-
+// domain/billing/entity/subscription.go
 package entity
 
 import (
 	"encoding/json"
+	"src/domain/billing/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Subscription_StatusEnum string
-
-const (
-	Subscription_StatusTrialing Subscription_StatusEnum = "trialing"
-	Subscription_StatusActive   Subscription_StatusEnum = "active"
-	Subscription_StatusPastDue  Subscription_StatusEnum = "past_due"
-	Subscription_StatusCanceled Subscription_StatusEnum = "canceled"
-)
-
-type SubscriptionEntity struct {
+type Subscription struct {
 	ID                    uuid.UUID               `json:"id"`
 	TS                    time.Time               `json:"ts"`
 	CreatedAt             time.Time               `json:"created_at"`
 	DeletedAt             *time.Time              `json:"deleted_at"`
-	Status                Subscription_StatusEnum `json:"status"`
-	Interval              string                  `json:"interval"`
+	Status                enum.SubscriptionStatus `json:"status"`
 	TrialEndsAt           *time.Time              `json:"trial_ends_at"`
 	CurrentPeriodStartAt  *time.Time              `json:"current_period_start_at"`
 	CurrentPeriodEndAt    *time.Time              `json:"current_period_end_at"`
@@ -37,15 +27,15 @@ type SubscriptionEntity struct {
 	PlanID                uuid.UUID               `json:"plan_id"`
 }
 
-var _ json.Marshaler = (*SubscriptionEntity)(nil)
-var _ json.Unmarshaler = (*SubscriptionEntity)(nil)
+var _ json.Marshaler = (*Subscription)(nil)
+var _ json.Unmarshaler = (*Subscription)(nil)
 
-func (e *SubscriptionEntity) MarshalJSON() ([]byte, error) {
-	type Alias SubscriptionEntity
+func (e *Subscription) MarshalJSON() ([]byte, error) {
+	type Alias Subscription
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *SubscriptionEntity) UnmarshalJSON(data []byte) error {
-	type Alias SubscriptionEntity
+func (e *Subscription) UnmarshalJSON(data []byte) error {
+	type Alias Subscription
 	return json.Unmarshal(data, (*Alias)(e))
 }

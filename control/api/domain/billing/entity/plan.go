@@ -3,43 +3,34 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/billing/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Plan_IntervalEnum string
-
-const (
-	Plan_IntervalHourly  Plan_IntervalEnum = "hourly"
-	Plan_IntervalDaily   Plan_IntervalEnum = "daily"
-	Plan_IntervalWeekly  Plan_IntervalEnum = "weekly"
-	Plan_IntervalMonthly Plan_IntervalEnum = "monthly"
-	Plan_IntervalYearly  Plan_IntervalEnum = "yearly"
-)
-
-type PlanEntity struct {
+type Plan struct {
 	ID         uuid.UUID         `json:"id"`
 	TS         time.Time         `json:"ts"`
 	CreatedAt  time.Time         `json:"created_at"`
 	DeletedAt  *time.Time        `json:"deleted_at"`
 	Code       string            `json:"code"`
 	Name       string            `json:"name"`
-	Interval   Plan_IntervalEnum `json:"interval"`
+	Interval   enum.PlanInterval `json:"interval"`
 	Currency   string            `json:"currency"`
 	PriceCents int               `json:"price_cents"`
 	Config     json.RawMessage   `json:"config"`
 }
 
-var _ json.Marshaler = (*PlanEntity)(nil)
-var _ json.Unmarshaler = (*PlanEntity)(nil)
+var _ json.Marshaler = (*Plan)(nil)
+var _ json.Unmarshaler = (*Plan)(nil)
 
-func (e *PlanEntity) MarshalJSON() ([]byte, error) {
-	type Alias PlanEntity
+func (e *Plan) MarshalJSON() ([]byte, error) {
+	type Alias Plan
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *PlanEntity) UnmarshalJSON(data []byte) error {
-	type Alias PlanEntity
+func (e *Plan) UnmarshalJSON(data []byte) error {
+	type Alias Plan
 	return json.Unmarshal(data, (*Alias)(e))
 }

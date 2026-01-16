@@ -3,24 +3,18 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/deployment/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Runtime_StateEnum string
-
-const (
-	Runtime_StateEnumActive   Runtime_StateEnum = "active"
-	Runtime_StateEnumInactive Runtime_StateEnum = "inactive"
-)
-
-type RuntimeEntity struct {
+type Runtime struct {
 	ID               uuid.UUID         `json:"id"`
 	TS               time.Time         `json:"ts"`
 	CreatedAt        time.Time         `json:"created_at"`
 	DeletedAt        *time.Time        `json:"deleted_at"`
-	State            Runtime_StateEnum `json:"state"`
+	State            enum.RuntimeState `json:"state"`
 	ReadOnly         bool              `json:"readonly"`
 	LastDeployedAt   *time.Time        `json:"last_deployed_at"`
 	Config           json.RawMessage   `json:"config"`
@@ -28,15 +22,15 @@ type RuntimeEntity struct {
 	ClusterID        uuid.UUID         `json:"cluster_id"`
 }
 
-var _ json.Marshaler = (*RuntimeEntity)(nil)
-var _ json.Unmarshaler = (*RuntimeEntity)(nil)
+var _ json.Marshaler = (*Runtime)(nil)
+var _ json.Unmarshaler = (*Runtime)(nil)
 
-func (e *RuntimeEntity) MarshalJSON() ([]byte, error) {
-	type Alias RuntimeEntity
+func (e *Runtime) MarshalJSON() ([]byte, error) {
+	type Alias Runtime
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *RuntimeEntity) UnmarshalJSON(data []byte) error {
-	type Alias RuntimeEntity
+func (e *Runtime) UnmarshalJSON(data []byte) error {
+	type Alias Runtime
 	return json.Unmarshal(data, (*Alias)(e))
 }

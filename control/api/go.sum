@@ -8,6 +8,7 @@ github.com/leandroluk/go/cqrs v0.1.0/go.mod h1:FTzmBjGlvAuSQ6J3RZf7KINaL18V0tyYT
 github.com/leandroluk/go/di v0.1.0/go.mod h1:q8V8XglOHzqTyu7H42wxNOc+xQLf2JiiOe+SIOpUEWE=
 github.com/leandroluk/go/env v0.1.0/go.mod h1:y6VdAY+5rrOAbfbEwiCLLo9B4SlwJ6oCmv1mf/uxAXo=
 github.com/leandroluk/go/meta v0.1.0/go.mod h1:Oo/Kw+RK0nJH35wTkiiQTuSOgyTaajicAEHyGrNWtQY=
+github.com/leandroluk/go/mut v0.1.0 h1:LUcjHygt3v8LwLi0DwcSJ+avrv1zCmBDjXX5fgr0GbE=
 github.com/leandroluk/go/mut v0.1.0/go.mod h1:u2QdoD+h59mYtGFvSYLEeXV6JYAXF5Fh1cHrvVJBgd8=
 github.com/leandroluk/go/oas v0.1.0/go.mod h1:h2K88f/iuzvB+aU9rYXlmRSbZGmSCXqv8t6qKjwujB0=
 github.com/leandroluk/go/search v0.1.1/go.mod h1:nH60x0etFR/UWi1F/JpEHr2PNYWMrZ6Qp6x0yDk8FgM=

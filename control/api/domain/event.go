@@ -1,5 +1,5 @@
-// domain/shared/event.go
-package shared
+// domain/event.go
+package domain
 
 import (
 	"encoding/json"

@@ -1,3 +1,4 @@
+// infrastructure/messaging/subscriber.go
 // application/port/messaging/subscriber.go
 package messaging
 

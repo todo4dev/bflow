@@ -3,37 +3,31 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain/deployment/enum"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Artifact_KindEnum string
-
-const (
-	Artifact_KindDeployment Artifact_KindEnum = "deployment"
-	Artifact_KindService    Artifact_KindEnum = "service"
-)
-
-type ArtifactEntity struct {
+type Artifact struct {
 	ID        uuid.UUID         `json:"id"`
 	TS        time.Time         `json:"ts"`
 	CreatedAt time.Time         `json:"created_at"`
 	DeletedAt *time.Time        `json:"deleted_at"`
-	Kind      Artifact_KindEnum `json:"kind"`
+	Kind      enum.ArtifactKind `json:"kind"`
 	Name      string            `json:"name"`
 	Metadata  json.RawMessage   `json:"metadata"`
 }
 
-var _ json.Marshaler = (*ArtifactEntity)(nil)
-var _ json.Unmarshaler = (*ArtifactEntity)(nil)
+var _ json.Marshaler = (*Artifact)(nil)
+var _ json.Unmarshaler = (*Artifact)(nil)
 
-func (a *ArtifactEntity) MarshalJSON() ([]byte, error) {
-	type Alias ArtifactEntity
+func (a *Artifact) MarshalJSON() ([]byte, error) {
+	type Alias Artifact
 	return json.Marshal((*Alias)(a))
 }
 
-func (a *ArtifactEntity) UnmarshalJSON(data []byte) error {
-	type Alias ArtifactEntity
+func (a *Artifact) UnmarshalJSON(data []byte) error {
+	type Alias Artifact
 	return json.Unmarshal(data, (*Alias)(a))
 }

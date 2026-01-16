@@ -13,7 +13,7 @@
         "ts"                   TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
         "created_at"           TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
         "deleted_at"           TIMESTAMPTZ(3)      NULL,
-        "type"                 VARCHAR(10)     NOT NULL,
+        "kind"                 VARCHAR(10)     NOT NULL,
         "status"               VARCHAR(10)     NOT NULL,
         "payload"              JSONB               NULL,
         "started_at"           TIMESTAMPTZ(3)      NULL,

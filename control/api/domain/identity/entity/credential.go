@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type CredentialEntity struct {
+type Credential struct {
 	ID           uuid.UUID `json:"id"`
 	TS           time.Time `json:"ts"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -16,15 +16,15 @@ type CredentialEntity struct {
 	AccountID    uuid.UUID `json:"account_id"`
 }
 
-var _ json.Marshaler = (*CredentialEntity)(nil)
-var _ json.Unmarshaler = (*CredentialEntity)(nil)
+var _ json.Marshaler = (*Credential)(nil)
+var _ json.Unmarshaler = (*Credential)(nil)
 
-func (e *CredentialEntity) MarshalJSON() ([]byte, error) {
-	type Alias CredentialEntity
+func (e *Credential) MarshalJSON() ([]byte, error) {
+	type Alias Credential
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *CredentialEntity) UnmarshalJSON(data []byte) error {
-	type Alias CredentialEntity
+func (e *Credential) UnmarshalJSON(data []byte) error {
+	type Alias Credential
 	return json.Unmarshal(data, (*Alias)(e))
 }

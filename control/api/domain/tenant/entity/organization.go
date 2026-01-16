@@ -1,4 +1,4 @@
-// domain/tenant/entity/membership.go
+// domain/tenant/entity/organization.go
 package entity
 
 import (
@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type OrganizationEntity struct {
+type Organization struct {
 	ID               uuid.UUID        `json:"id"`
 	TS               time.Time        `json:"ts"`
 	CreatedAt        time.Time        `json:"created_at"`
@@ -19,15 +19,15 @@ type OrganizationEntity struct {
 	CreatorAccountID uuid.UUID        `json:"creator_account_id"`
 }
 
-var _ json.Marshaler = (*OrganizationEntity)(nil)
-var _ json.Unmarshaler = (*OrganizationEntity)(nil)
+var _ json.Marshaler = (*Organization)(nil)
+var _ json.Unmarshaler = (*Organization)(nil)
 
-func (e *OrganizationEntity) MarshalJSON() ([]byte, error) {
-	type Alias OrganizationEntity
+func (e *Organization) MarshalJSON() ([]byte, error) {
+	type Alias Organization
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *OrganizationEntity) UnmarshalJSON(data []byte) error {
-	type Alias OrganizationEntity
+func (e *Organization) UnmarshalJSON(data []byte) error {
+	type Alias Organization
 	return json.Unmarshal(data, (*Alias)(e))
 }

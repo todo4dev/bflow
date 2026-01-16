@@ -3,41 +3,35 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain"
+	"src/domain/identity/enum"
 	"src/domain/identity/event"
-	"src/domain/shared"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Account_RoleEnum string
+type Account struct {
+	domain.Aggregate[event.Account]
 
-const (
-	Account_RoleAdmin  Account_RoleEnum = "admin"
-	Account_RoleMember Account_RoleEnum = "member"
-)
-
-type AccountEntity struct {
-	shared.Aggregate[event.AccountEventEnum]
-
-	ID              uuid.UUID        `db:"id"`
-	TS              time.Time        `db:"ts"`
-	CreatedAt       time.Time        `db:"created_at"`
-	DeletedAt       *time.Time       `db:"deleted_at"`
-	Email           string           `db:"email"`
-	EmailVerifiedAt *time.Time       `db:"email_verified_at"`
-	Role            Account_RoleEnum `db:"role"`
+	ID              uuid.UUID        `json:"id"`
+	TS              time.Time        `json:"ts"`
+	CreatedAt       time.Time        `json:"created_at"`
+	DeletedAt       *time.Time       `json:"deleted_at"`
+	Email           string           `json:"email"`
+	EmailVerifiedAt *time.Time       `json:"email_verified_at"`
+	Role            enum.AccountRole `json:"role"`
 }
 
-var _ json.Marshaler = (*AccountEntity)(nil)
-var _ json.Unmarshaler = (*AccountEntity)(nil)
+var _ json.Marshaler = (*Account)(nil)
+var _ json.Unmarshaler = (*Account)(nil)
 
-func (e *AccountEntity) MarshalJSON() ([]byte, error) {
-	type Alias AccountEntity
+func (e *Account) MarshalJSON() ([]byte, error) {
+	type Alias Account
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *AccountEntity) UnmarshalJSON(data []byte) error {
-	type Alias AccountEntity
+func (e *Account) UnmarshalJSON(data []byte) error {
+	type Alias Account
 	return json.Unmarshal(data, (*Alias)(e))
 }

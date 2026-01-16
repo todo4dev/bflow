@@ -6,23 +6,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"src/domain/tenant/enum"
 )
 
-type Cluster_StateEnum string
-
-const (
-	Cluster_StateActive    Cluster_StateEnum = "active"
-	Cluster_StateMigrating Cluster_StateEnum = "migrating"
-	Cluster_StateLegacy    Cluster_StateEnum = "legacy"
-	Cluster_StateDisabled  Cluster_StateEnum = "disabled"
-)
-
-type ClusterEntity struct {
+type Cluster struct {
 	ID                uuid.UUID         `json:"id"`
 	TS                time.Time         `json:"ts"`
 	CreatedAt         time.Time         `json:"created_at"`
 	DeletedAt         *time.Time        `json:"deleted_at"`
-	State             Cluster_StateEnum `json:"state"`
+	State             enum.ClusterState `json:"state"`
 	PromotedAt        *time.Time        `json:"promoted_at"`
 	LegacyAt          *time.Time        `json:"legacy_at"`
 	Name              string            `json:"name"`
@@ -34,15 +27,15 @@ type ClusterEntity struct {
 	OrganizationID    uuid.UUID         `json:"organization_id"`
 }
 
-var _ json.Marshaler = (*ClusterEntity)(nil)
-var _ json.Unmarshaler = (*ClusterEntity)(nil)
+var _ json.Marshaler = (*Cluster)(nil)
+var _ json.Unmarshaler = (*Cluster)(nil)
 
-func (e *ClusterEntity) MarshalJSON() ([]byte, error) {
-	type Alias ClusterEntity
+func (e *Cluster) MarshalJSON() ([]byte, error) {
+	type Alias Cluster
 	return json.Marshal((*Alias)(e))
 }
 
-func (e *ClusterEntity) UnmarshalJSON(data []byte) error {
-	type Alias ClusterEntity
+func (e *Cluster) UnmarshalJSON(data []byte) error {
+	type Alias Cluster
 	return json.Unmarshal(data, (*Alias)(e))
 }
