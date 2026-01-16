@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-subscription" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "subscription" (
+        "id"                      UUID            NOT NULL,
+        "ts"                      TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
+        "created_at"              TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
+        "deleted_at"              TIMESTAMPTZ(3)      NULL,
+        "status"                  VARCHAR(10)     NOT NULL,
+        "trial_ends_at"           TIMESTAMPTZ(3)      NULL,
+        "current_period_start_at" TIMESTAMPTZ(3)      NULL,
+        "current_period_end_at"   TIMESTAMPTZ(3)      NULL,
+        "canceled_at"             TIMESTAMPTZ(3)      NULL,
+        "currency"                VARCHAR(50)     NOT NULL,
+        "price_cents"             INT             NOT NULL,
+        "stripe_customer_key"     VARCHAR(100)    NOT NULL,
+        "stripe_subscription_key" VARCHAR(100)    NOT NULL,
+        "organization_id"         UUID            NOT NULL,
+        "plan_id"                 UUID            NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("plan_id")         REFERENCES "plan"         ("id") ON DELETE CASCADE
+      );
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "subscription";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515289272" />
+  </changeSet>
+</databaseChangeLog>

@@ -6,29 +6,27 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                       http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
                       http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
-  <changeSet id="create-extensions" author="leandroluk@gmail.com">
+  <changeSet id="create-table-membership" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
-      CREATE EXTENSION IF NOT EXISTS "pg_trgm"; 
-      CREATE EXTENSION IF NOT EXISTS "fuzzystrmatch";
+      CREATE TABLE "membership" (
+        "id"              UUID            NOT NULL,
+        "ts"              TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
+        "role"            VARCHAR(10)     NOT NULL,
+        "account_id"      UUID            NOT NULL,
+        "organization_id" UUID            NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("account_id")      REFERENCES "account"      ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE
+      );
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
-      DROP EXTENSION IF EXISTS "pg_trgm";
-      DROP EXTENSION IF EXISTS "fuzzystrmatch";
+      DROP TABLE "membership";
     ]]></sql></rollback>
   </changeSet>
 
-  <changeSet id="create-schema-control_plane" author="leandroluk@gmail.com">
-    <sql splitStatements="false" endDelimiter=";"><![CDATA[
-      CREATE SCHEMA IF NOT EXISTS "control_plane";
-    ]]></sql>
-
-    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
-      DROP SCHEMA IF EXISTS "control_plane" CASCADE;
-    ]]></sql></rollback>
-  </changeSet>
-  
   <changeSet id="tag" author="leandroluk@gmail.com">
-    <tagDatabase tag="1766409400893" />
+    <tagDatabase tag="1768515223911" />
   </changeSet>
 </databaseChangeLog>

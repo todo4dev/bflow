@@ -6,26 +6,19 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                       http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
                       http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
-
-  <changeSet id="create-table-account" author="leandroluk@gmail.com">
+  <changeSet id="create-extensions" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
-      CREATE TABLE "control_plane"."account" (
-        "id"         uuid,
-        "created_at" timestamptz NOT NULL DEFAULT now(),
-        "updated_at" timestamptz NOT NULL DEFAULT now(),
-        "deleted_at" timestamptz     NULL,
-        "email"      text        NOT NULL,
-        "status"     text        NOT NULL,
-        --
-        PRIMARY KEY ("id"),
-        UNIQUE      ("email")
-      );
-      CREATE INDEX ON "control_plane"."account" ("status");
+      CREATE EXTENSION IF NOT EXISTS "pg_trgm"; 
+      CREATE EXTENSION IF NOT EXISTS "fuzzystrmatch";
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
-      DROP TABLE IF EXISTS "control_plane"."account" CASCADE;
+      DROP EXTENSION IF EXISTS "pg_trgm";
+      DROP EXTENSION IF EXISTS "fuzzystrmatch";
     ]]></sql></rollback>
   </changeSet>
 
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768512607771" />
+  </changeSet>
 </databaseChangeLog>
