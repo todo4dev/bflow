@@ -22,10 +22,15 @@
         "content_sha256"       TEXT            NOT NULL,
         "metadata"             JSONB               NULL,
         "replaced_document_id" UUID                NULL,
+        "organization_id"      UUID                NULL,
         --
         PRIMARY KEY ("id"),
-        FOREIGN KEY ("replaced_document_id") REFERENCES "document" ("id") ON DELETE SET NULL
+        FOREIGN KEY ("replaced_document_id") REFERENCES "document"     ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("organization_id")      REFERENCES "organization" ("id") ON DELETE SET NULL
       );
+      CREATE INDEX "idx_document_organization_id"       ON "document" ("organization_id")      WHERE "deleted_at" IS NULL AND "organization_id" IS NOT NULL;
+      CREATE INDEX "idx_document_replaced_document_id"  ON "document" ("replaced_document_id") WHERE "deleted_at" IS NULL AND "replaced_document_id" IS NOT NULL;
+      CREATE INDEX "idx_document_content_sha256_active" ON "document" ("content_sha256")       WHERE "deleted_at" IS NULL; 
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
@@ -34,6 +39,6 @@
   </changeSet>
 
   <changeSet id="tag" author="leandroluk@gmail.com">
-    <tagDatabase tag="1768515134817" />
+    <tagDatabase tag="1768515148052" />
   </changeSet>
 </databaseChangeLog>

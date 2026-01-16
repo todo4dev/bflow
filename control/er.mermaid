@@ -15,6 +15,8 @@ erDiagram
   account      ||--o{ activity     : "account_id"
   account      ||--o{ membership   : "account_id"
   membership   }o--|| organization : "organization_id"
+  account      ||--o{ invite       : "creator_account_id"
+  invite       }o--|| organization : "organization_id"
   organization ||--o{ cluster      : "organization_id"
   notification }o--|| cluster      : "cluster_id"
   activity     }o--|| cluster      : "cluster_id"
@@ -34,7 +36,7 @@ erDiagram
   signature    }o--|| account      : "account_id"
   signature    }o--|| certificate  : "certificate_id"
   document     ||--o{ document     : "replaced_document_id"
-
+  
   account {
     uuidv7               id                "pk"
     timestamptz[3]       ts                ""
@@ -146,6 +148,21 @@ erDiagram
     text                  content_sha256       ""
     null[jsonb]           metadata             ""
     null[uuidv7]          replaced_document_id "fk"
+    null[uuidv7]          organization_id      "fk"
+  }
+
+  invite {
+    uuidv7                id                    "pk"
+    timestamptz[3]        ts                    ""
+    timestamptz[3]        created_at            ""
+    char[6]               code                  ""
+    varchar[100]          email                 ""
+    enum[membership_role] role                  ""
+    enum[invite_status]   status                ""
+    timestamptz[3]        expires_at            ""
+    timestamptz[3]        accepted_at           ""
+    uuidv7                organization_id       ""
+    uuidv7                creator_account_id    "fk"
   }
 
   invoice {
@@ -278,7 +295,6 @@ erDiagram
     null[timestamptz[3]] last_deployed_at   ""
     jsonb                config             ""
     null[uuidv7]         current_release_id "fk"
-    uuidv7               organization_id    "fk"
     uuidv7               cluster_id         "fk"
   }
 

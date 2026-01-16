@@ -1,4 +1,4 @@
-// control/api/domain/deployment/entity/artifact.go
+// domain/deployment/entity/artifact.go
 package entity
 
 import (

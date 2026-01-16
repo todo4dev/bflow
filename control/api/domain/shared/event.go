@@ -1,4 +1,4 @@
-// control/api/domain/shared/event.go
+// domain/shared/event.go
 package shared
 
 import (

@@ -1,4 +1,4 @@
-// control/api/domain/deployment/entity/runtime.go
+// domain/deployment/entity/runtime.go
 package entity
 
 import (
@@ -25,7 +25,6 @@ type RuntimeEntity struct {
 	LastDeployedAt   *time.Time        `json:"last_deployed_at"`
 	Config           json.RawMessage   `json:"config"`
 	CurrentReleaseID *uuid.UUID        `json:"current_release_id"`
-	OrganizationID   uuid.UUID         `json:"organization_id"`
 	ClusterID        uuid.UUID         `json:"cluster_id"`
 }
 

@@ -17,8 +17,10 @@
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("account_id")      REFERENCES "account"      ("id") ON DELETE CASCADE,
-        FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE
+        FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE,
+        UNIQUE      ("organization_id", "account_id")
       );
+      CREATE INDEX "idx_membership_account_id" ON "membership" ("account_id");
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

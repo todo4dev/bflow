@@ -22,6 +22,8 @@
         FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE SET NULL,
         FOREIGN KEY ("cluster_id") REFERENCES "cluster" ("id") ON DELETE CASCADE
       );
+      CREATE INDEX "idx_activity_cluster_id" ON "activity" ("cluster_id");
+      CREATE INDEX "idx_activity_account_id" ON "activity" ("account_id") WHERE "account_id" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

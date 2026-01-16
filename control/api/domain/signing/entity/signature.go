@@ -1,4 +1,4 @@
-// control/api/domain/signing/entity/document.go
+// domain/signing/entity/document.go
 package entity
 
 import (

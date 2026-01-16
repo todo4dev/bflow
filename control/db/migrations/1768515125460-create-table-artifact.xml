@@ -13,7 +13,7 @@
         "ts"          TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
         "created_at"  TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
         "deleted_at"  TIMESTAMPTZ(3)      NULL,
-        "kind"        ARTIFACT_KIND   NOT NULL,
+        "kind"        VARCHAR(20)     NOT NULL,
         "name"        VARCHAR(100)    NOT NULL,
         "metadata"    JSONB           NOT NULL,
         --

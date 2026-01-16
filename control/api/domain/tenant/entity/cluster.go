@@ -1,4 +1,4 @@
-// control/api/domain/tenant/entity/cluster.go
+// domain/tenant/entity/cluster.go
 package entity
 
 import (

@@ -23,6 +23,8 @@
         PRIMARY KEY ("id"),
         FOREIGN KEY ("cluster_id") REFERENCES "cluster" ("id") ON DELETE CASCADE
       );
+      CREATE INDEX "idx_agent_cluster_status_active"    ON "agent" ("cluster_id", "status")       WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_agent_cluster_last_seen_active" ON "agent" ("cluster_id", "last_seen_at") WHERE "deleted_at" IS NULL AND "last_seen_at" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

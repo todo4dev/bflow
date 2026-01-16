@@ -1,4 +1,4 @@
-// control/api/domain/identity/entity/profile.go
+// domain/identity/entity/profile.go
 package entity
 
 import (

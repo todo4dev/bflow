@@ -1,4 +1,4 @@
-// control/api/domain/deployment/entity/pipeline.go
+// domain/deployment/entity/pipeline.go
 package entity
 
 import (

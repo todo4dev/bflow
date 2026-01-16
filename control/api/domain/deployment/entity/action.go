@@ -1,4 +1,4 @@
-// control/api/domain/deployment/entity/action.go
+// domain/deployment/entity/action.go
 package entity
 
 import (

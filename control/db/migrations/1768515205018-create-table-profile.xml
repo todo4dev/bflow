@@ -19,9 +19,9 @@
         "account_id"  UUID            NOT NULL,
         --
         PRIMARY KEY ("id"),
-        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE
+        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE,
+        UNIQUE      ("account_id")
       );
-
     ]]></sql>
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
       DROP TABLE "profile";

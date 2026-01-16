@@ -30,6 +30,10 @@
         FOREIGN KEY ("requester_account_id") REFERENCES "account"  ("id") ON DELETE CASCADE,
         FOREIGN KEY ("previous_pipeline_id") REFERENCES "pipeline" ("id") ON DELETE SET NULL
       );
+      CREATE INDEX "idx_pipeline_runtime_id"           ON "pipeline" ("runtime_id")           WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_pipeline_requester_account_id" ON "pipeline" ("requester_account_id") WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_pipeline_previous_pipeline_id" ON "pipeline" ("previous_pipeline_id") WHERE "deleted_at" IS NULL AND "previous_pipeline_id" IS NOT NULL;
+      CREATE INDEX "idx_pipeline_target_release_id"    ON "pipeline" ("target_release_id")    WHERE "deleted_at" IS NULL AND "target_release_id" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

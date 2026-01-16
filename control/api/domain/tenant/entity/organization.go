@@ -1,4 +1,4 @@
-// control/api/domain/tenant/entity/membership.go
+// domain/tenant/entity/membership.go
 package entity
 
 import (

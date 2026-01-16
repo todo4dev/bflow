@@ -25,6 +25,8 @@
         FOREIGN KEY ("pipeline_id")        REFERENCES "pipeline" ("id") ON DELETE CASCADE,
         FOREIGN KEY ("execution_agent_id") REFERENCES "agent"    ("id") ON DELETE CASCADE
       );
+      CREATE INDEX "idx_action_pipeline_id"        ON "action" ("pipeline_id")        WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_action_execution_agent_id" ON "action" ("execution_agent_id") WHERE "deleted_at" IS NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

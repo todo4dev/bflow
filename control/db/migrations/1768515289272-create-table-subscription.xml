@@ -27,8 +27,11 @@
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE,
-        FOREIGN KEY ("plan_id")         REFERENCES "plan"         ("id") ON DELETE CASCADE
+        FOREIGN KEY ("plan_id")         REFERENCES "plan"         ("id") ON DELETE CASCADE,
+        UNIQUE      ("organization_id", "plan_id")
       );
+      CREATE INDEX "idx_subscription_plan_id"                   ON "subscription" ("plan_id")               WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_subscription_current_period_end_active" ON "subscription" ("current_period_end_at") WHERE "deleted_at" IS NULL AND "current_period_end_at" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

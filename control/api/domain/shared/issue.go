@@ -1,4 +1,4 @@
-// control/api/domain/shared/issue.go
+// domain/shared/issue.go
 package shared
 
 import (

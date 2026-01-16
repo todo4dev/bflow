@@ -19,8 +19,10 @@
         "creator_account_id" UUID               NULL,
         --
         PRIMARY KEY ("id"),
+        UNIQUE      ("slug"),
         FOREIGN KEY ("creator_account_id") REFERENCES "account" ("id") ON DELETE SET NULL
       );
+      CREATE INDEX "idx_organization_creator_account_id" ON "organization" ("creator_account_id") WHERE "creator_account_id" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
@@ -29,6 +31,6 @@
   </changeSet>
 
   <changeSet id="tag" author="leandroluk@gmail.com">
-    <tagDatabase tag="1768515148052" />
+    <tagDatabase tag="1768515134817" />
   </changeSet>
 </databaseChangeLog>

@@ -1,4 +1,4 @@
-// control/api/domain/identity/entity/notification.go
+// domain/identity/entity/notification.go
 package entity
 
 import (

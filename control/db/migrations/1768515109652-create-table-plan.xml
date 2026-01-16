@@ -20,7 +20,8 @@
         "price_cents" INT            NOT NULL,
         "config"      JSONB          NOT NULL,
         --
-        PRIMARY KEY ("id")
+        PRIMARY KEY ("id"),
+        UNIQUE      ("code")
       );
     ]]></sql>
 

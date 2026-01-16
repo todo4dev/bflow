@@ -1,4 +1,4 @@
-// control/api/domain/shared/aggregate.go
+// domain/shared/aggregate.go
 package shared
 
 type Aggregate[TKind ~string] struct {

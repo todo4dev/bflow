@@ -25,6 +25,7 @@
         PRIMARY KEY ("id"),
         FOREIGN KEY ("action_id") REFERENCES "action" ("id") ON DELETE CASCADE
       );
+      CREATE INDEX "idx_stage_action_position_active" ON "stage" ("action_id", "position") WHERE "deleted_at" IS NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

@@ -1,4 +1,4 @@
-// control/api/domain/identity/entity/credential.go
+// domain/identity/entity/credential.go
 package entity
 
 import (

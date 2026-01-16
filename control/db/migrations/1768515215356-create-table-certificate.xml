@@ -22,8 +22,11 @@
         "account_id"      UUID            NOT NULL,
         --
         PRIMARY KEY ("id"),
-        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE
+        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE,
+        UNIQUE      ("thumbprint")
       );
+      CREATE INDEX "idx_certificate_account_is_active" ON "certificate" ("account_id", "is_active") WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_certificate_expires_at_active" ON "certificate" ("expires_at")              WHERE "deleted_at" IS NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[

@@ -1,4 +1,4 @@
-// control/api/domain/billing/entity/invoice.go
+// domain/billing/entity/invoice.go
 package entity
 
 import (

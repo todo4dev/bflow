@@ -1,4 +1,4 @@
-// control/api/domain/signing/entity/document.go
+// domain/signing/entity/document.go
 package entity
 
 import (
@@ -40,6 +40,7 @@ type DocumentEntity struct {
 	ContentSHA256      string              `json:"content_sha256"`
 	Metadata           json.RawMessage     `json:"metadata"`
 	ReplacedDocumentID *uuid.UUID          `json:"replaced_document_id"`
+	OrganizationID     *uuid.UUID          `json:"organization_id"`
 }
 
 var _ json.Marshaler = (*DocumentEntity)(nil)

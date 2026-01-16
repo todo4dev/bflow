@@ -1,4 +1,4 @@
-// control/api/domain/identity/event/account.go
+// domain/identity/event/account.go
 package event
 
 import (
