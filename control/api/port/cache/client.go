@@ -1,4 +1,4 @@
-// port/cache/store.go
+// port/cache/client.go
 package cache
 
 import (
@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// Store represents a cache storage (Redis)
-type Store interface {
+// Client represents a cache storage (Redis)
+type Client interface {
 	// Set stores a value with TTL
 	Set(ctx context.Context, key string, value any, ttl time.Duration) error
 

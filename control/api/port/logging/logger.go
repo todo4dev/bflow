@@ -1,7 +1,13 @@
-// port/logging/logger.go
-package logging
+// port/logger/logger.go
+package logger
 
 import "context"
+
+// Field represents a log field
+type Field struct {
+	Key   string
+	Value any
+}
 
 // Logger represents a structured logger (JSON)
 type Logger interface {
@@ -22,4 +28,24 @@ type Logger interface {
 
 	// With creates a child logger with additional fields
 	With(fields ...Field) Logger
+}
+
+// String creates a string field
+func String(key, value string) Field {
+	return Field{Key: key, Value: value}
+}
+
+// Int creates an integer field
+func Int(key string, value int) Field {
+	return Field{Key: key, Value: value}
+}
+
+// Error creates an error field
+func Error(err error) Field {
+	return Field{Key: "error", Value: err.Error()}
+}
+
+// Any creates a field of any type
+func Any(key string, value any) Field {
+	return Field{Key: key, Value: value}
 }

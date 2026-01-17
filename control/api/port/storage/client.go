@@ -1,4 +1,4 @@
-// port/storage/store.go
+// port/storage/client.go
 package storage
 
 import (
@@ -7,8 +7,18 @@ import (
 	"time"
 )
 
-// Store represents a generic object storage
-type Store interface {
+// Info represents information about a stored object
+type Info struct {
+	Path         string
+	Size         int64
+	LastModified time.Time
+	ContentType  string
+	ETag         string
+	Metadata     map[string]string
+}
+
+// Client represents a generic object storage
+type Client interface {
 	// Upload uploads data to the specified path
 	Upload(ctx context.Context, path string, reader io.Reader, metadata map[string]string) error
 

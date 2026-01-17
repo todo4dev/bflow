@@ -3,6 +3,25 @@ package sqldb
 
 import "context"
 
+// Row represents a single row of results
+type Row interface {
+	Scan(dest ...any) error
+}
+
+// Rows represents multiple rows of results
+type Rows interface {
+	Next() bool
+	Scan(dest ...any) error
+	Close() error
+	Err() error
+}
+
+// Result represents the result of a write operation
+type Result interface {
+	LastInsertId() (int64, error)
+	RowsAffected() (int64, error)
+}
+
 // Client represents a generic database client
 type Client interface {
 	// Query executes a SELECT query and returns multiple rows
