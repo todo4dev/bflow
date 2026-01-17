@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-artifact_release" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "artifact_release" (
+        "id"           UUID           NOT NULL,
+        "ts"           TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"   TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"   TIMESTAMPTZ(3)     NULL,
+        "version"      VARCHAR(50)    NOT NULL,
+        "channel"      VARCHAR(10)    NOT NULL,
+        "recommended"  BOOL           NOT NULL,
+        "notes"        TEXT               NULL,
+        "published_at" TIMESTAMPTZ(3)     NULL,
+        "metadata"     JSONB          NOT NULL,
+        "artifact_id"  UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("artifact_id") REFERENCES "artifact" ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_artifact_release_artifact_published_at_active" ON "artifact_release" ("artifact_id", "published_at") WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_artifact_release_artifact_recommended_active"  ON "artifact_release" ("artifact_id")                 WHERE "deleted_at" IS NULL AND "recommended" = TRUE;
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "artifact_release";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515182551" />
+  </changeSet>
+</databaseChangeLog>

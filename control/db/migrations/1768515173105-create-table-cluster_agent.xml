@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-cluster_agent" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "cluster_agent" (
+        "id"           UUID           NOT NULL,
+        "ts"           TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"   TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"   TIMESTAMPTZ(3)     NULL,
+        "status"       VARCHAR(10)    NOT NULL,
+        "version"      VARCHAR(50)    NOT NULL,
+        "last_seen_at" TIMESTAMPTZ(3)     NULL,
+        "public_key"   TEXT               NULL,
+        "metadata"     JSONB              NULL,
+        "cluster_id"   UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("cluster_id") REFERENCES "cluster" ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_cluster_agent_cluster_status_active"    ON "cluster_agent" ("cluster_id", "status")       WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_cluster_agent_cluster_last_seen_active" ON "cluster_agent" ("cluster_id", "last_seen_at") WHERE "deleted_at" IS NULL AND "last_seen_at" IS NOT NULL;
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "cluster_agent";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515173105" />
+  </changeSet>
+</databaseChangeLog>

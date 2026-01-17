@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-subscription_payment" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "subscription_payment" (
+        "id"                        UUID           NOT NULL,
+        "ts"                        TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"                TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"                TIMESTAMPTZ(3)     NULL,
+        "status"                    VARCHAR(10)    NOT NULL,
+        "currency"                  VARCHAR(10)    NOT NULL,
+        "amount_cents"              INT            NOT NULL,
+        "stripe_payment_intent_key" VARCHAR(100)   NOT NULL,
+        "failure_code"              VARCHAR(100)       NULL,
+        "failure_message"           TEXT               NULL,
+        "processed_at"              TIMESTAMPTZ(3)     NULL,
+        "subscription_invoice_id"   UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("subscription_invoice_id") REFERENCES "subscription_invoice" ("id") ON DELETE CASCADE,
+        UNIQUE      ("subscription_invoice_id", "stripe_payment_intent_key")
+      );
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "subscription_payment";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515314527" />
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-pipeline_action" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "pipeline_action" (
+        "id"                 UUID           NOT NULL,
+        "ts"                 TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"         TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"         TIMESTAMPTZ(3)     NULL,
+        "kind"               VARCHAR(10)    NOT NULL,
+        "status"             VARCHAR(10)    NOT NULL,
+        "started_at"         TIMESTAMPTZ(3)     NULL,
+        "finished_at"        TIMESTAMPTZ(3)     NULL,
+        "error_message"      TEXT               NULL,
+        "pipeline_id"                "UUID           NOT NULL,
+        "execution_cluster_agent_id" UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("pipeline_id")                REFERENCES "pipeline"      ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("execution_cluster_agent_id") REFERENCES "cluster_agent" ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_pipeline_action_pipeline_id"                ON "pipeline_action" ("pipeline_id")                WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_pipeline_action_execution_cluster_agent_id" ON "pipeline_action" ("execution_cluster_agent_id") WHERE "deleted_at" IS NULL;
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "pipeline_action";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515271751" />
+  </changeSet>
+</databaseChangeLog>

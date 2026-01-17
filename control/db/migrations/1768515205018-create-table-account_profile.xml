@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-account_profile" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "account_profile" (
+        "id"          UUID           NOT NULL,
+        "ts"          TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "given_name"  VARCHAR(100)       NULL,
+        "family_name" VARCHAR(100)       NULL,
+        "theme"       VARCHAR(10)    NOT NULL,
+        "language"    VARCHAR(10)    NOT NULL,
+        "timezone"    VARCHAR(50)    NOT NULL,
+        "account_id"  UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE,
+        UNIQUE      ("account_id")
+      );
+    ]]></sql>
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "account_profile";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515205018" />
+  </changeSet>
+</databaseChangeLog>

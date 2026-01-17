@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-cluster_runtime" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "cluster_runtime" (
+        "id"                          UUID           NOT NULL,
+        "ts"                          TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"                  TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"                  TIMESTAMPTZ(3)     NULL,
+        "state"                       VARCHAR(10)    NOT NULL,
+        "readonly"                    BOOL           NOT NULL,
+        "last_deployed_at"            TIMESTAMPTZ(3)     NULL,
+        "config"                      JSONB              NULL,
+        "current_artifact_release_id" UUID               NULL,
+        "cluster_id"                  UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("current_artifact_release_id") REFERENCES "artifact_release" ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("cluster_id")                  REFERENCES "cluster"          ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_cluster_runtime_cluster_id"                  ON "cluster_runtime" ("cluster_id")                  WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_cluster_runtime_current_artifact_release_id" ON "cluster_runtime" ("current_artifact_release_id") WHERE "deleted_at" IS NULL AND "current_artifact_release_id" IS NOT NULL;
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "cluster_runtime";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515253904" />
+  </changeSet>
+</databaseChangeLog>

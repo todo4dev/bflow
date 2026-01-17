@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-document_signature" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "document_signature" (
+        "id"                     UUID           NOT NULL,
+        "ts"                     TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"             TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "state"                  VARCHAR(10)    NOT NULL,
+        "signed_at"              TIMESTAMPTZ(3)     NULL,
+        "failure_reason"         TEXT               NULL,
+        "value"                  TEXT               NULL,
+        "hash"                   TEXT               NULL,
+        "metadata"               JSONB              NULL,
+        "document_id"            UUID           NOT NULL,
+        "account_certificate_id" UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("document_id")            REFERENCES "document"            ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("account_certificate_id") REFERENCES "account_certificate" ("id") ON DELETE CASCADE
+      );
+      CREATE INDEX "idx_document_signature_account_certificate_id" ON "document_signature" ("account_certificate_id");
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "document_signature";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768515323457" />
+  </changeSet>
+</databaseChangeLog>

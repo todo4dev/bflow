@@ -9,31 +9,31 @@
   <changeSet id="create-table-pipeline" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
       CREATE TABLE "pipeline" (
-        "id"                   UUID           NOT NULL,
-        "ts"                   TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
-        "created_at"           TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
-        "deleted_at"           TIMESTAMPTZ(3)     NULL,
-        "kind"                 VARCHAR(10)    NOT NULL,
-        "status"               VARCHAR(10)    NOT NULL,
-        "payload"              JSONB              NULL,
-        "started_at"           TIMESTAMPTZ(3)     NULL,
-        "finished_at"          TIMESTAMPTZ(3)     NULL,
-        "error_message"        TEXT               NULL,
-        "target_release_id"    UUID               NULL,
-        "runtime_id"           UUID           NOT NULL,
-        "requester_account_id" UUID           NOT NULL,
-        "previous_pipeline_id" UUID               NULL,
+        "id"                         UUID           NOT NULL,
+        "ts"                         TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"                 TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"                 TIMESTAMPTZ(3)     NULL,
+        "kind"                       VARCHAR(10)    NOT NULL,
+        "status"                     VARCHAR(10)    NOT NULL,
+        "payload"                    JSONB              NULL,
+        "started_at"                 TIMESTAMPTZ(3)     NULL,
+        "finished_at"                TIMESTAMPTZ(3)     NULL,
+        "error_message"              TEXT               NULL,
+        "target_artifact_release_id" UUID               NULL,
+        "cluster_runtime_id"         UUID           NOT NULL,
+        "requester_account_id"       UUID           NOT NULL,
+        "previous_pipeline_id"       UUID               NULL,
         --
         PRIMARY KEY ("id"),
-        FOREIGN KEY ("target_release_id")    REFERENCES "release"  ("id") ON DELETE SET NULL,
-        FOREIGN KEY ("runtime_id")           REFERENCES "runtime"  ("id") ON DELETE CASCADE,
-        FOREIGN KEY ("requester_account_id") REFERENCES "account"  ("id") ON DELETE CASCADE,
-        FOREIGN KEY ("previous_pipeline_id") REFERENCES "pipeline" ("id") ON DELETE SET NULL
+        FOREIGN KEY ("target_artifact_release_id") REFERENCES "artifact_release" ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("cluster_runtime_id")         REFERENCES "cluster_runtime"  ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("requester_account_id")       REFERENCES "account"          ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("previous_pipeline_id")       REFERENCES "pipeline"         ("id") ON DELETE SET NULL
       );
-      CREATE INDEX "idx_pipeline_runtime_id"           ON "pipeline" ("runtime_id")           WHERE "deleted_at" IS NULL;
-      CREATE INDEX "idx_pipeline_requester_account_id" ON "pipeline" ("requester_account_id") WHERE "deleted_at" IS NULL;
-      CREATE INDEX "idx_pipeline_previous_pipeline_id" ON "pipeline" ("previous_pipeline_id") WHERE "deleted_at" IS NULL AND "previous_pipeline_id" IS NOT NULL;
-      CREATE INDEX "idx_pipeline_target_release_id"    ON "pipeline" ("target_release_id")    WHERE "deleted_at" IS NULL AND "target_release_id" IS NOT NULL;
+      CREATE INDEX "idx_pipeline_cluster_runtime_id"         ON "pipeline" ("cluster_runtime_id")         WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_pipeline_requester_account_id"       ON "pipeline" ("requester_account_id")       WHERE "deleted_at" IS NULL;
+      CREATE INDEX "idx_pipeline_previous_pipeline_id"       ON "pipeline" ("previous_pipeline_id")       WHERE "deleted_at" IS NULL AND "previous_pipeline_id" IS NOT NULL;
+      CREATE INDEX "idx_pipeline_target_artifact_release_id" ON "pipeline" ("target_artifact_release_id") WHERE "deleted_at" IS NULL AND "target_artifact_release_id" IS NOT NULL;
     ]]></sql>
 
     <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
