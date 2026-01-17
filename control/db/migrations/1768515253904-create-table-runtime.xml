@@ -9,16 +9,16 @@
   <changeSet id="create-table-runtime" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
       CREATE TABLE "runtime" (
-        "id"                 UUID            NOT NULL,
-        "ts"                 TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "created_at"         TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "deleted_at"         TIMESTAMPTZ(3)      NULL,
-        "state"              VARCHAR(10)     NOT NULL,
-        "readonly"           BOOL            NOT NULL,
-        "last_deployed_at"   TIMESTAMPTZ(3)      NULL,
-        "config"             JSONB           NOT NULL,
-        "current_release_id" UUID                NULL,
-        "cluster_id"         UUID            NOT NULL,
+        "id"                 UUID           NOT NULL,
+        "ts"                 TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"         TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"         TIMESTAMPTZ(3)     NULL,
+        "state"              VARCHAR(10)    NOT NULL,
+        "readonly"           BOOL           NOT NULL,
+        "last_deployed_at"   TIMESTAMPTZ(3)     NULL,
+        "config"             JSONB          NOT NULL,
+        "current_release_id" UUID               NULL,
+        "cluster_id"         UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("current_release_id") REFERENCES "release" ("id") ON DELETE SET NULL,

@@ -9,17 +9,17 @@
   <changeSet id="create-table-certificate" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
       CREATE TABLE "certificate" (
-        "id"              UUID            NOT NULL,
-        "ts"              TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "created_at"      TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "deleted_at"      TIMESTAMPTZ(3)      NULL,
-        "expires_at"      TIMESTAMPTZ(3)  NOT NULL,
-        "display_name"    VARCHAR(100)    NOT NULL,
-        "document_number" VARCHAR(14)     NOT NULL,
-        "owner_name"      VARCHAR(100)    NOT NULL,
-        "thumbprint"      TEXT            NOT NULL,
-        "is_active"       BOOLEAN         NOT NULL,
-        "account_id"      UUID            NOT NULL,
+        "id"              UUID           NOT NULL,
+        "ts"              TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"      TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"      TIMESTAMPTZ(3)     NULL,
+        "expires_at"      TIMESTAMPTZ(3) NOT NULL,
+        "display_name"    VARCHAR(100)   NOT NULL,
+        "document_number" VARCHAR(14)    NOT NULL,
+        "owner_name"      VARCHAR(100)   NOT NULL,
+        "thumbprint"      TEXT           NOT NULL,
+        "is_active"       BOOLEAN        NOT NULL,
+        "account_id"      UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE CASCADE,

@@ -9,18 +9,18 @@
   <changeSet id="create-table-stage" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
       CREATE TABLE "stage" (
-        "id"          UUID            NOT NULL,
-        "ts"          TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "created_at"  TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "deleted_at"  TIMESTAMPTZ(3)      NULL,
-        "name"        VARCHAR(100)    NOT NULL,
-        "position"    INT             NOT NULL,
-        "status"      VARCHAR(10)     NOT NULL,
-        "started_at"  TIMESTAMPTZ(3)      NULL,
-        "finished_at" TIMESTAMPTZ(3)      NULL,
-        "summary"     TEXT                NULL,
-        "output_meta" JSONB               NULL,
-        "action_id"   UUID            NOT NULL,
+        "id"          UUID           NOT NULL,
+        "ts"          TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"  TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"  TIMESTAMPTZ(3)     NULL,
+        "name"        VARCHAR(100)   NOT NULL,
+        "position"    INT            NOT NULL,
+        "status"      VARCHAR(10)    NOT NULL,
+        "started_at"  TIMESTAMPTZ(3)     NULL,
+        "finished_at" TIMESTAMPTZ(3)     NULL,
+        "summary"     TEXT               NULL,
+        "output_meta" JSONB              NULL,
+        "action_id"   UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("action_id") REFERENCES "action" ("id") ON DELETE CASCADE

@@ -9,17 +9,17 @@
   <changeSet id="create-table-release" author="leandroluk@gmail.com">
     <sql splitStatements="false" endDelimiter=";"><![CDATA[
       CREATE TABLE "release" (
-        "id"           UUID            NOT NULL,
-        "ts"           TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "created_at"   TIMESTAMPTZ(3)  NOT NULL DEFAULT NOW(),
-        "deleted_at"   TIMESTAMPTZ(3)      NULL,
-        "version"      VARCHAR(50)     NOT NULL,
-        "channel"      VARCHAR(10)     NOT NULL,
-        "recommended"  BOOL            NOT NULL,
-        "notes"        TEXT                NULL,
-        "published_at" TIMESTAMPTZ(3)      NULL,
-        "metadata"     JSONB           NOT NULL,
-        "artifact_id"  UUID            NOT NULL,
+        "id"           UUID           NOT NULL,
+        "ts"           TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"   TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "deleted_at"   TIMESTAMPTZ(3)     NULL,
+        "version"      VARCHAR(50)    NOT NULL,
+        "channel"      VARCHAR(10)    NOT NULL,
+        "recommended"  BOOL           NOT NULL,
+        "notes"        TEXT               NULL,
+        "published_at" TIMESTAMPTZ(3)     NULL,
+        "metadata"     JSONB          NOT NULL,
+        "artifact_id"  UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("artifact_id") REFERENCES "artifact" ("id") ON DELETE CASCADE
