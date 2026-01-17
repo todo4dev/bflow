@@ -1,9 +1,9 @@
-// domain/deployment/entity/cluster_runtime.go
+// domain/tenant/entity/cluster_runtime.go
 package entity
 
 import (
 	"encoding/json"
-	"src/domain/deployment/enum"
+	"src/domain/tenant/enum"
 	"time"
 
 	"github.com/google/uuid"

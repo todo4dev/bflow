@@ -3,13 +3,17 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain"
 	"src/domain/identity/enum"
+	"src/domain/identity/event"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Account struct {
+	domain.Aggregate[event.Account]
+
 	ID              uuid.UUID        `json:"id"`
 	TS              time.Time        `json:"ts"`
 	CreatedAt       time.Time        `json:"created_at"`

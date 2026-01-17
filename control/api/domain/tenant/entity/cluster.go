@@ -7,10 +7,14 @@ import (
 
 	"github.com/google/uuid"
 
+	"src/domain"
 	"src/domain/tenant/enum"
+	"src/domain/tenant/event"
 )
 
 type Cluster struct {
+	domain.Aggregate[event.Cluster]
+
 	ID                uuid.UUID         `json:"id"`
 	TS                time.Time         `json:"ts"`
 	CreatedAt         time.Time         `json:"created_at"`

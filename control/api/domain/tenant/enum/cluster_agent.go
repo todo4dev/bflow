@@ -1,4 +1,4 @@
-// domain/deployment/enum/cluster_agent.go
+// domain/tenant/enum/cluster_agent.go
 package enum
 
 type ClusterAgentStatus string

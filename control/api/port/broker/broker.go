@@ -33,3 +33,18 @@ type Consumer interface {
 	// Close closes the connection
 	Close() error
 }
+
+// Client represents a broker client
+type Client interface {
+	Publisher
+	Consumer
+
+	// Connect establishes connection
+	Connect(ctx context.Context) error
+
+	// Ping checks connection health
+	Ping(ctx context.Context) error
+
+	// Close closes the connection
+	Close() error
+}

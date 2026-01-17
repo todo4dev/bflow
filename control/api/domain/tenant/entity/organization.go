@@ -3,12 +3,16 @@ package entity
 
 import (
 	"encoding/json"
+	"src/domain"
+	"src/domain/tenant/event"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Organization struct {
+	domain.Aggregate[event.Organization]
+
 	ID               uuid.UUID        `json:"id"`
 	TS               time.Time        `json:"ts"`
 	CreatedAt        time.Time        `json:"created_at"`

@@ -1,4 +1,4 @@
-// domain/deployment/enum/cluster_runtime.go
+// domain/tenant/enum/cluster_runtime.go
 package enum
 
 type ClusterRuntimeState string
