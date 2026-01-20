@@ -25,13 +25,14 @@ func NewServer() *Server {
 	})
 	a.Use(recover.New())
 
-	r := router.Wrapper(a).
-		Group(billing.Group).
-		Group(deployment.Group).
-		Group(identity.Group).
-		Group(signing.Group).
-		Group(system.Group).
-		Group(tenant.Group)
+	r := router.Wrapper(a,
+		billing.Group,
+		deployment.Group,
+		identity.Group,
+		signing.Group,
+		system.Group,
+		tenant.Group,
+	)
 
 	return &Server{app: a, router: r}
 }
