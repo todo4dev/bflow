@@ -10,37 +10,45 @@ import (
 	"src/port/cache"
 	"src/port/database"
 	"src/port/storage"
-
-	"github.com/leandroluk/gox/di"
 )
 
 var startTime time.Time
 
 func init() { startTime = time.Now() }
 
-type Result struct {
-	Uptime   time.Duration    `json:"uptime"`
-	Status   bool             `json:"status"`
-	Services map[string]error `json:"services"`
+type pinger interface {
+	Ping(ctx context.Context) error
 }
 
-func UseCase(ctx context.Context) (*Result, error) {
+type Handler struct {
+	services map[string]pinger
+}
+
+func New(
+	database database.Client,
+	cache cache.Client,
+	broker broker.Client,
+	storage storage.Client,
+) *Handler {
+	return &Handler{
+		services: map[string]pinger{
+			"database": database,
+			"cache":    cache,
+			"broker":   broker,
+			"storage":  storage,
+		},
+	}
+}
+
+func (u *Handler) Handle(ctx context.Context) (*Result, error) {
 	result := Result{
-		Uptime:   time.Since(startTime),
+		Uptime:   time.Since(startTime).String(),
 		Status:   true,
 		Services: map[string]error{},
 	}
-	clients := map[string]interface {
-		Ping(ctx context.Context) error
-	}{
-		"database": di.Resolve[database.Client](),
-		"cache":    di.Resolve[cache.Client](),
-		"broker":   di.Resolve[broker.Client](),
-		"storage":  di.Resolve[storage.Client](),
-	}
 
-	for name, client := range clients {
-		result.Services[name] = client.Ping(ctx)
+	for name, service := range u.services {
+		result.Services[name] = service.Ping(ctx)
 		if result.Services[name] != nil {
 			result.Status = false
 		}

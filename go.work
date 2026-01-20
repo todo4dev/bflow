@@ -1,0 +1,9 @@
+go 1.25.6
+
+use (
+	..\..\leandroluk\gox\di
+	..\..\leandroluk\gox\env
+	..\..\leandroluk\gox\oas
+	..\..\leandroluk\gox\validate
+	./control/api
+)

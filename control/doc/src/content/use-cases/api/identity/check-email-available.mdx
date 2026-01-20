@@ -1,0 +1,47 @@
+---
+title: Check Email Availability
+---
+
+# Check Email Availability
+
+Verifies whether an email address is available for registration.
+
+## Description
+
+This endpoint checks if the provided email address is already associated with any account in the system, including soft-deleted accounts. It is typically used during the registration flow to provide immediate feedback to users.
+
+## Rules
+
+- The endpoint must be accessed via a `GET` request.
+- The email must be provided as a path parameter.
+- The system must check all accounts, including those that have been soft-deleted.
+- No authentication is required to access this endpoint.
+
+## Request
+
+- **Method:** `GET`
+- **Path:** `/identity/check/email/:email`
+- **Parameters:**
+  | Parameter | Type   | Location | Required | Description                     |
+  |-----------|--------|----------|----------|---------------------------------|
+  | email     | string | path     | Yes      | The email address to check.     |
+
+## Success Case
+
+**Condition:** The email is not associated with any account.
+
+- **HTTP Status:** `200 OK`
+- **Response Body:** Empty
+
+## Error Case
+
+**Condition:** The email is already in use by an existing account.
+
+- **HTTP Status:** `409 Conflict`
+- **Response Body:**
+  ```json
+  {
+    "code": "EMAIL_ALREADY_IN_USE",
+    "message": "The provided email is already associated with an account."
+  }
+  ```

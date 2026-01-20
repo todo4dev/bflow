@@ -2,7 +2,6 @@ package swagger_json
 
 import (
 	"encoding/json"
-
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"

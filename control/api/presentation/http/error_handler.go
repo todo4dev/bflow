@@ -3,10 +3,13 @@ package http
 
 import (
 	"errors"
+	stdHttp "net/http"
+	"net/url"
 	"reflect"
 
 	identity "src/domain/identity/issue"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
 	v "github.com/leandroluk/gox/validate"
 )
@@ -45,5 +48,33 @@ func errorHandler(c *fiber.Ctx, err error) error {
 	}
 
 	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+
+	if code == fiber.StatusInternalServerError {
+		sentry.WithScope(func(scope *sentry.Scope) {
+			scope.SetTag("method", c.Method())
+			scope.SetTag("path", c.Path())
+			scope.SetUser(sentry.User{IPAddress: c.IP()})
+
+			u, _ := url.Parse(c.OriginalURL())
+
+			scope.SetRequest(&stdHttp.Request{ // Use standard http.Request strict for compatibility if needed, or just set extra
+				Method:     c.Method(),
+				URL:        u,
+				RequestURI: c.OriginalURL(),
+				RemoteAddr: c.IP(),
+				Header:     convertHeaders(c.GetReqHeaders()),
+			})
+			sentry.CaptureException(err)
+		})
+	}
+
 	return c.Status(code).JSON(fiber.Map{"error": true, "message": message})
+}
+
+func convertHeaders(headers map[string][]string) stdHttp.Header {
+	h := make(stdHttp.Header)
+	for k, v := range headers {
+		h[k] = v
+	}
+	return h
 }

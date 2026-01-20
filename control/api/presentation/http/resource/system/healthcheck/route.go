@@ -1,23 +1,25 @@
 package healthcheck
 
 import (
-	"src/application/system/healthcheck"
+	"src/application/system/usecase/healthcheck"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/oas"
 )
 
 var Route = router.
 	Route(func(c *fiber.Ctx) error {
-		result, err := healthcheck.UseCase(c.Context())
+		usecase := di.Resolve[*healthcheck.Handler]()
+		result, err := usecase.Handle(c.Context())
 		if err != nil {
 			return err
 		}
 		return c.JSON(result)
 	}).
 	Operation(func(o *oas.Operation) {
-		o.Summary("Healthcheck").
+		o.Tags("System").Summary("Healthcheck").
 			Description("Checks connectivity status of services").
 			Response("200", func(r *oas.Response) {
 				r.Description("Ok").

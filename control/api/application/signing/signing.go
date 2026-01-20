@@ -1,0 +1,4 @@
+package signing
+
+func Provide() {
+}

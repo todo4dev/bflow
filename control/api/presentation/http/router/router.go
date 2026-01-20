@@ -1,6 +1,7 @@
 package router
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -70,8 +71,8 @@ func Wrapper(app *fiber.App) *Router {
 
 	r := Router{app: app, fiber: app, path: ""}
 
-	di.RegisterAs[*Config](func() *Config { return &c })
-	di.RegisterAs[*Router](func() *Router { return &r })
+	di.SingletonAs[*Config](func() *Config { return &c })
+	di.SingletonAs[*Router](func() *Router { return &r })
 
 	return &r
 }
@@ -96,6 +97,8 @@ func (r *Router) Group(def GroupDefinition) *Router {
 	return r
 }
 
+var paramRegex = regexp.MustCompile(`:([a-zA-Z0-9_]+)`)
+
 func (r *Router) addSpec(subPath, method string, spec func(*oas.Operation)) {
 	if spec == nil {
 		return
@@ -104,8 +107,11 @@ func (r *Router) addSpec(subPath, method string, spec func(*oas.Operation)) {
 	full := r.path + subPath
 	full = strings.ReplaceAll(full, "//", "/")
 
+	// Convert Fiber params (:param) to OpenAPI params ({param})
+	oasPath := paramRegex.ReplaceAllString(full, "{$1}")
+
 	r.specs = append(r.specs, &SpecEntry{
-		Path:   full,
+		Path:   oasPath,
 		Method: method,
 		Spec:   spec,
 	})

@@ -11,6 +11,7 @@ The Healthcheck API provides a mechanism to monitor the operational status of th
 This endpoint is used by load balancers, container orchestrators, and monitoring services to determine if the application instance is healthy and capable of processing requests.
 
 ## Rules
+
 - The endpoint must be accessed via a `GET` request.
 - The system must perform a connectivity check on the primary database.
 - The system must perform a connectivity check on the cache service.

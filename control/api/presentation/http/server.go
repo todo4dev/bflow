@@ -1,12 +1,12 @@
 package http
 
 import (
-	"src/presentation/http/route/billing"
-	"src/presentation/http/route/deployment"
-	"src/presentation/http/route/identity"
-	"src/presentation/http/route/signing"
-	"src/presentation/http/route/system"
-	"src/presentation/http/route/tenant"
+	"src/presentation/http/resource/billing"
+	"src/presentation/http/resource/deployment"
+	"src/presentation/http/resource/identity"
+	"src/presentation/http/resource/signing"
+	"src/presentation/http/resource/system"
+	"src/presentation/http/resource/tenant"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"

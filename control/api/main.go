@@ -5,11 +5,13 @@ import (
 	"context"
 	"time"
 
-	"src/application/system/healthcheck"
+	"src/application"
+	"src/application/system/usecase/healthcheck"
 	"src/infrastructure"
 	"src/presentation/http"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/env"
 )
 
@@ -20,10 +22,13 @@ func main() {
 	defer sentry.Flush(2 * time.Second)
 
 	infrastructure.Provide()
+	application.Provide()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if _, err := healthcheck.UseCase(ctx); err != nil {
+
+	handler := di.Resolve[*healthcheck.Handler]()
+	if _, err := handler.Handle(ctx); err != nil {
 		panic(err)
 	}
 
