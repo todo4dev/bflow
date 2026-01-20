@@ -4,10 +4,10 @@ package golang_jwt
 import (
 	"time"
 
-	"github.com/leandroluk/go/v"
+	v "github.com/leandroluk/gox/validate"
 )
 
-type GolangJWTConfig struct {
+type Config struct {
 	Algorithm  string
 	Issuer     string
 	Audience   string
@@ -17,7 +17,7 @@ type GolangJWTConfig struct {
 	RefreshTTL time.Duration
 }
 
-var GolangJWTConfigSchema = v.Object(func(t *GolangJWTConfig, s *v.ObjectSchema[GolangJWTConfig]) {
+var ConfigSchema = v.Object(func(t *Config, s *v.ObjectSchema[Config]) {
 	s.Field(&t.Algorithm).Text().Required().OneOf("HS256", "RS256").Default("HS256")
 	s.Field(&t.Issuer).Text().Required().Default("issuer")
 	s.Field(&t.Audience).Text().Required().Default("audience")

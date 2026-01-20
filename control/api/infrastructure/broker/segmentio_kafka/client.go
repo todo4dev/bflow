@@ -11,8 +11,8 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type SegmentioKafkaClient struct {
-	config SegmentioKafkaConfig
+type Client struct {
+	config Config
 	writer *kafka.Writer
 	dialer *kafka.Dialer
 
@@ -21,26 +21,19 @@ type SegmentioKafkaClient struct {
 	reader *kafka.Reader
 }
 
-var _ broker.Client = (*SegmentioKafkaClient)(nil)
+var _ broker.Client = (*Client)(nil)
 
-func NewSegmentioKafkaClient(rawConfig SegmentioKafkaConfig) (*SegmentioKafkaClient, error) {
-	config, err := SegmentioKafkaConfigSchema.Validate(rawConfig)
+func NewClient(rawConfig *Config) (*Client, error) {
+	config, err := ConfigSchema.Validate(rawConfig)
 	if err != nil {
 		return nil, err
 	}
-
-	dialer := &kafka.Dialer{
-		Timeout:   10 * time.Second,
-		DualStack: true,
-	}
-
-	return &SegmentioKafkaClient{
-		config: config,
-		dialer: dialer,
-	}, nil
+	dialer := &kafka.Dialer{Timeout: 10 * time.Second, DualStack: true}
+	client := &Client{config: config, dialer: dialer}
+	return client, nil
 }
 
-func (c *SegmentioKafkaClient) Connect(ctx context.Context) error {
+func (c *Client) Connect(ctx context.Context) error {
 	// Initialize writer shared instance
 	c.writer = &kafka.Writer{
 		Addr:     kafka.TCP(c.config.Brokers...),
@@ -50,7 +43,7 @@ func (c *SegmentioKafkaClient) Connect(ctx context.Context) error {
 	return c.Ping(ctx)
 }
 
-func (c *SegmentioKafkaClient) Ping(ctx context.Context) error {
+func (c *Client) Ping(ctx context.Context) error {
 	if len(c.config.Brokers) == 0 {
 		return fmt.Errorf("no brokers configured")
 	}
@@ -63,14 +56,14 @@ func (c *SegmentioKafkaClient) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *SegmentioKafkaClient) Close() error {
+func (c *Client) Close() error {
 	if c.writer != nil {
 		return c.writer.Close()
 	}
 	return nil
 }
 
-func (c *SegmentioKafkaClient) Subscribe(topics ...string) error {
+func (c *Client) Subscribe(topics ...string) error {
 	if c.reader != nil {
 		return errors.New("consumer already started, cannot subscribe")
 	}
@@ -85,7 +78,7 @@ func (c *SegmentioKafkaClient) Subscribe(topics ...string) error {
 	return nil
 }
 
-func (c *SegmentioKafkaClient) Consume(ctx context.Context, handler func(ctx context.Context, msg broker.Message) error) error {
+func (c *Client) Consume(ctx context.Context, handler func(ctx context.Context, msg broker.Message) error) error {
 	if len(c.topics) == 0 {
 		return errors.New("no topics subscribed")
 	}
@@ -158,7 +151,7 @@ func (c *SegmentioKafkaClient) Consume(ctx context.Context, handler func(ctx con
 	}
 }
 
-func (c *SegmentioKafkaClient) Publish(ctx context.Context, topic string, key string, message []byte) error {
+func (c *Client) Publish(ctx context.Context, topic string, key string, message []byte) error {
 	msg := kafka.Message{
 		Topic: c.config.TopicPrefix + topic,
 		Key:   []byte(key),
@@ -167,7 +160,7 @@ func (c *SegmentioKafkaClient) Publish(ctx context.Context, topic string, key st
 	return c.writer.WriteMessages(ctx, msg)
 }
 
-func (c *SegmentioKafkaClient) PublishBatch(ctx context.Context, topic string, messages []broker.Message) error {
+func (c *Client) PublishBatch(ctx context.Context, topic string, messages []broker.Message) error {
 	msgs := make([]kafka.Message, len(messages))
 	fullTopic := c.config.TopicPrefix + topic
 

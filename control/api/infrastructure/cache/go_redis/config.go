@@ -4,7 +4,7 @@ package go_redis
 import (
 	"time"
 
-	"github.com/leandroluk/go/v"
+	v "github.com/leandroluk/gox/validate"
 )
 
 type GoRedisConfig struct {

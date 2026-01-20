@@ -1,5 +1,5 @@
 // port/logger/logger.go
-package logger
+package logging
 
 import "context"
 

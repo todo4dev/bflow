@@ -20,7 +20,7 @@ type customClaims struct {
 	Timezone   *string `json:"timezone,omitempty"`
 }
 
-type GolangJWTProvider struct {
+type Provider struct {
 	algorithm  lib.SigningMethod
 	issuer     string
 	audience   string
@@ -30,10 +30,10 @@ type GolangJWTProvider struct {
 	verifyKey  any
 }
 
-var _ jwt.Provider = (*GolangJWTProvider)(nil)
+var _ jwt.Provider = (*Provider)(nil)
 
-func NewGolangJWTProvider(rawConfig GolangJWTConfig) (*GolangJWTProvider, error) {
-	config, err := GolangJWTConfigSchema.Validate(rawConfig)
+func NewProvider(rawConfig Config) (*Provider, error) {
+	config, err := ConfigSchema.Validate(rawConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func NewGolangJWTProvider(rawConfig GolangJWTConfig) (*GolangJWTProvider, error)
 		return nil, err
 	}
 
-	return &GolangJWTProvider{
+	return &Provider{
 		algorithm:  algorithm,
 		issuer:     config.Issuer,
 		audience:   config.Audience,
@@ -62,7 +62,7 @@ func NewGolangJWTProvider(rawConfig GolangJWTConfig) (*GolangJWTProvider, error)
 	}, nil
 }
 
-func (p *GolangJWTProvider) createToken(
+func (p *Provider) createToken(
 	sessionID string,
 	claims jwt.Claims,
 	kind jwt.Kind,
@@ -93,7 +93,7 @@ func (p *GolangJWTProvider) createToken(
 	return token.SignedString(p.signKey)
 }
 
-func (p *GolangJWTProvider) Create(
+func (p *Provider) Create(
 	sessionID string,
 	claims jwt.Claims,
 	optionalIncludeRefresh ...bool,
@@ -123,7 +123,7 @@ func (p *GolangJWTProvider) Create(
 	return token, nil
 }
 
-func (p *GolangJWTProvider) Decode(
+func (p *Provider) Decode(
 	tokenString string,
 ) (*jwt.Decoded, error) {
 	token, err := lib.ParseWithClaims(tokenString, &customClaims{}, func(t *lib.Token) (any, error) {

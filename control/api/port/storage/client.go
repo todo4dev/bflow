@@ -39,4 +39,7 @@ type Client interface {
 
 	// List lists objects with the given prefix
 	List(ctx context.Context, prefix string) ([]Info, error)
+
+	// Ping verifies connectivity
+	Ping(ctx context.Context) error
 }

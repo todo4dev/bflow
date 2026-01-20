@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func parseKeys(config GolangJWTConfig) (signKey any, verifyKey any, err error) {
+func parseKeys(config Config) (signKey any, verifyKey any, err error) {
 	privateBytes := []byte(config.PrivateKey)
 	publicBytes := []byte(config.PublicKey)
 

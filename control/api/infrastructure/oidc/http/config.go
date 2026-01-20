@@ -1,9 +1,9 @@
 // infrastructure/oidc/config.go
 package oidc
 
-import "github.com/leandroluk/go/v"
+import v "github.com/leandroluk/gox/validate"
 
-type HttpConfig struct {
+type Config struct {
 	BaseURI               string
 	MicrosoftClientID     string
 	MicrosoftClientSecret string
@@ -13,7 +13,7 @@ type HttpConfig struct {
 	GoogleCallbackURI     string
 }
 
-var HttpConfigSchema = v.Object(func(t *HttpConfig, s *v.ObjectSchema[HttpConfig]) {
+var ConfigSchema = v.Object(func(t *Config, s *v.ObjectSchema[Config]) {
 	s.Field(&t.BaseURI).Text().Default("http://localhost:4000")
 	s.Field(&t.MicrosoftClientID).Text().Required()
 	s.Field(&t.MicrosoftClientSecret).Text().Required()

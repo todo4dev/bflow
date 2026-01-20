@@ -7,21 +7,21 @@ import (
 	"src/port/oidc"
 )
 
-type HttpProvider struct {
-	config    HttpConfig
+type Provider struct {
+	config    Config
 	microsoft oidc.Adapter
 	google    oidc.Adapter
 }
 
-var _ oidc.Provider = (*HttpProvider)(nil)
+var _ oidc.Provider = (*Provider)(nil)
 
-func NewHttpProvider(rawConfig HttpConfig) (*HttpProvider, error) {
-	config, err := HttpConfigSchema.Validate(rawConfig)
+func NewProvider(rawConfig Config) (*Provider, error) {
+	config, err := ConfigSchema.Validate(rawConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	f := &HttpProvider{config: config}
+	f := &Provider{config: config}
 	f.microsoft = adapter.NewHttpMicrosoft(
 		config.BaseURI,
 		config.MicrosoftClientID,
@@ -37,7 +37,7 @@ func NewHttpProvider(rawConfig HttpConfig) (*HttpProvider, error) {
 	return f, nil
 }
 
-func (f *HttpProvider) GetAdapter(provider oidc.ProviderName) (oidc.Adapter, error) {
+func (f *Provider) GetAdapter(provider oidc.ProviderName) (oidc.Adapter, error) {
 	switch provider {
 	case oidc.ProviderName_MICROSOFT:
 		return f.microsoft, nil
