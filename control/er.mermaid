@@ -3,7 +3,7 @@ config:
   layout: elk
 ---
 erDiagram
-	direction LR
+  direction LR
   subscription            }o--|| organization            : "organization_id"
   subscription_invoice    }o--|| subscription            : "subscription_id"
   subscription_payment    }o--|| subscription_invoice    : "subscription_invoice_id"
@@ -35,6 +35,9 @@ erDiagram
   document                ||--o{ document_signature      : "document_id"
   document_signature      }o--|| account_certificate     : "account_certificate_id"
   document                ||--o{ document                : "replaced_document_id"
+  account                 ||--|| account_notification_preferences : "account_id"
+  cluster                 ||--o{ cluster_agent_enrollment : "cluster_id"
+  document                }o--|| organization            : "organization_id"
   
   account {
     uuidv7               id                "pk"
@@ -57,7 +60,7 @@ erDiagram
     null[timestamptz[3]]         finished_at                ""
     null[text]                   error_message              ""
     uuidv7                       pipeline_id                "fk"
-    uuidv7                       execution_cluster_agent_id "fk"
+    null[uuidv7]                 execution_cluster_agent_id "fk"
   }
 
   account_activity {
@@ -72,16 +75,16 @@ erDiagram
   }
 
   cluster_agent {
-    uuidv7               id              "pk"
-    timestamptz[3]       ts              ""
-    timestamptz[3]       created_at      ""
-    null[timestamptz[3]] deleted_at      ""
-    enum[cluster_agent_status]   status          ""
-    varchar[50]          version         ""
-    null[timestamptz[3]] last_seen_at    ""
-    null[text]           public_key      ""
-    null[jsonb]          metadata        ""
-    uuidv7               cluster_id      "fk"
+    uuidv7                     id           "pk"
+    timestamptz[3]             ts           ""
+    timestamptz[3]             created_at   ""
+    null[timestamptz[3]]       deleted_at   ""
+    enum[cluster_agent_status] status       ""
+    varchar[50]                version      ""
+    null[timestamptz[3]]       last_seen_at ""
+    text                       public_key   ""
+    null[jsonb]                metadata     ""
+    uuidv7                     cluster_id   "fk"
   }
 
   artifact {
@@ -147,7 +150,7 @@ erDiagram
     text                  content_sha256       ""
     null[jsonb]           metadata             ""
     null[uuidv7]          replaced_document_id "fk"
-    null[uuidv7]          organization_id      "fk"
+    uuidv7                organization_id      "fk"
   }
 
   organization_invite {
@@ -204,14 +207,13 @@ erDiagram
   }
 
   organization {
-    uuidv7               id                 "pk"
-    timestamptz[3]       ts                 ""
-    timestamptz[3]       created_at         ""
-    null[timestamptz[3]] deleted_at         ""
-    varchar[100]         name               ""
-    varchar[100]         slug               ""
-    jsonb                config             ""
-    null[uuidv7]         creator_account_id "fk"
+    uuidv7               id         "pk"
+    timestamptz[3]       ts         ""
+    timestamptz[3]       created_at ""
+    null[timestamptz[3]] deleted_at ""
+    varchar[100]         name       ""
+    varchar[100]         slug       ""
+    jsonb                config     ""
   }
 
   subscription_payment {
@@ -342,4 +344,21 @@ erDiagram
     varchar[100]              stripe_subscription_key   ""
     uuidv7                    organization_id           "fk"
     uuidv7                    plan_id                   "fk"
+  }
+
+  account_notification_preferences {
+    uuidv7         id          "pk"
+    timestamptz[3] ts          ""
+    jsonb          preferences ""
+    uuidv7         account_id  "fk"
+  }
+
+  cluster_agent_enrollment {
+    uuidv7           id         "pk"
+    timestamptz[3]   ts         ""
+    timestamptz[3]   created_at ""
+    char[32]         token      ""
+    timestamptz[3]   expires_at ""
+    bool             used       ""
+    uuidv7           cluster_id "fk"
   }
