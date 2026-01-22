@@ -15,12 +15,14 @@
         "kind"       VARCHAR(100)   NOT NULL,
         "message"    TEXT               NULL,
         "metadata"   JSONB              NULL,
-        "account_id" UUID               NULL,
-        "cluster_id" UUID           NOT NULL,
+        "account_id"      UUID               NULL,
+        "organization_id" UUID               NULL,
+        "cluster_id"      UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
-        FOREIGN KEY ("account_id") REFERENCES "account" ("id") ON DELETE SET NULL,
-        FOREIGN KEY ("cluster_id") REFERENCES "cluster" ("id") ON DELETE CASCADE
+        FOREIGN KEY ("account_id")      REFERENCES "account"      ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("cluster_id")      REFERENCES "cluster"      ("id") ON DELETE CASCADE
       );
       CREATE INDEX "idx_account_activity_cluster_id" ON "account_activity" ("cluster_id");
       CREATE INDEX "idx_account_activity_account_id" ON "account_activity" ("account_id") WHERE "account_id" IS NOT NULL;

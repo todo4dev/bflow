@@ -1,3 +1,0 @@
-package tenant
-
-func Provide() {}

@@ -1,10 +1,10 @@
+// infrastructure/database/database.go
 package database
 
 import (
 	"fmt"
-	"src/domain/identity/repository"
-	"src/infrastructure/database/pgx"
-	"src/infrastructure/database/pgx/identity"
+	"src/domain"
+	"src/infrastructure/database/jackc_pgx"
 	"src/port/database"
 
 	"github.com/leandroluk/gox/di"
@@ -12,21 +12,23 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("DATABASE_PROVIDER", "pgx")
+	provider := env.Get("DATABASE_PROVIDER", "jackc_pgx")
 	switch provider {
-	case "pgx":
-		config := pgx.Config{
+	case "jackc_pgx":
+		config := jackc_pgx.Config{
 			DSN: env.Get("DATABASE_DSN", "postgres://user:pass@localhost:5432/bflow?sslmode=disable"),
 		}
-		if _, err := pgx.ConfigSchema.Validate(&config); err != nil {
+		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("database config validation failed: %w", err))
 		}
-		instance, err := pgx.NewClient(config)
+
+		instance, err := jackc_pgx.NewClient(&config)
 		if err != nil {
 			panic(fmt.Errorf("failed to create database client: %w", err))
 		}
+
 		di.SingletonAs[database.Client](func() database.Client { return instance })
-		di.SingletonAs[repository.Account](identity.NewAccountRepository)
+		di.SingletonAs[domain.Uow](jackc_pgx.NewUow)
 	default:
 		panic(fmt.Errorf("invalid 'DATABASE_PROVIDER': %s", provider))
 	}

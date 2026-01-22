@@ -1,3 +1,4 @@
+// presentation/http/router/router.go
 package router
 
 import (
@@ -8,7 +9,6 @@ import (
 	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/env"
 	"github.com/leandroluk/gox/oas"
-	"github.com/leandroluk/gox/oas/types"
 )
 
 type SpecEntry struct {
@@ -50,7 +50,7 @@ func (rd *RouteDefinition) Operation(spec func(*oas.Operation)) *RouteDefinition
 	return rd
 }
 
-func Wrapper(app *fiber.App, groups ...GroupDefinition) *Router {
+func Wrapper(app *fiber.App, groups []GroupDefinition) *Router {
 	c := Config{
 		Port:                env.Get("SERVER_PORT", 3000),
 		BasePath:            env.Get("SERVER_BASE_PATH", "/"),
@@ -65,7 +65,7 @@ func Wrapper(app *fiber.App, groups ...GroupDefinition) *Router {
 		SwaggerLicenseURL:   env.Get("SERVER_SWAGGER_LICENSE_URL", "https://opensource.org/licenses/MIT"),
 		SwaggerVersion:      env.Get("SERVER_SWAGGER_VERSION", "1.0.0"),
 	}
-	if _, err := ConfigSchema.Validate(c); err != nil {
+	if err := c.Validate(); err != nil {
 		panic(err)
 	}
 
@@ -175,7 +175,7 @@ func (r *Router) collectSpecs() []*SpecEntry {
 func (r *Router) GenerateOAS() *oas.Document {
 	doc := oas.New()
 
-	doc.Info(func(i *types.Info) {
+	doc.Info(func(i *oas.Info) {
 		i.Title(env.Get("OPENAPI_TITLE", "API Title"))
 		i.Version(env.Get("OPENAPI_VERSION", "1.0.0"))
 		i.Description(env.Get("OPENAPI_DESCRIPTION", "API Description"))

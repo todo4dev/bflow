@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"src/application"
-	"src/application/system/usecase/healthcheck"
+	"src/application/system/healthcheck"
 	"src/infrastructure"
 	"src/presentation/http"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/env"
+	"github.com/leandroluk/gox/util"
 )
 
 func main() {
@@ -27,10 +28,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	handler := di.Resolve[*healthcheck.Handler]()
-	if _, err := handler.Handle(ctx); err != nil {
-		panic(err)
-	}
+	util.Must(di.Resolve[*healthcheck.Handler]().Handle(ctx))
 
 	server := http.NewServer()
 

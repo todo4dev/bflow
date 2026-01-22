@@ -1,3 +1,4 @@
+// infrastructure/logging/logging.go
 package logging
 
 import (
@@ -17,13 +18,15 @@ func Provide() {
 			Level:       env.Get("LOGGING_LEVEL", "info"),
 			ServiceName: env.Get("APP_NAME", "bflow-control"),
 		}
-		if _, err := rs_zerolog.ConfigSchema.Validate(&config); err != nil {
+		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("logging config validation failed: %w", err))
 		}
-		instance, err := rs_zerolog.NewLogger(config)
+
+		instance, err := rs_zerolog.NewLogger(&config)
 		if err != nil {
 			panic(fmt.Errorf("failed to create logger: %w", err))
 		}
+
 		di.SingletonAs[logging.Logger](func() logging.Logger { return instance })
 	default:
 		panic(fmt.Errorf("invalid 'LOGGING_PROVIDER': %s", provider))

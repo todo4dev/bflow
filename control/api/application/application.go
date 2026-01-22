@@ -1,19 +1,12 @@
+// application/application.go
 package application
 
 import (
-	"src/application/billing"
-	"src/application/deployment"
-	"src/application/identity"
-	"src/application/signing"
+	"src/application/auth"
 	"src/application/system"
-	"src/application/tenant"
 )
 
 func Provide() {
-	billing.Provide()
-	deployment.Provide()
-	identity.Provide()
-	signing.Provide()
+	auth.Provide()
 	system.Provide()
-	tenant.Provide()
 }

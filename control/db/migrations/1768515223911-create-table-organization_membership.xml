@@ -11,6 +11,7 @@
       CREATE TABLE "organization_membership" (
         "id"              UUID           NOT NULL,
         "ts"              TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at"      TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
         "role"            VARCHAR(10)    NOT NULL,
         "account_id"      UUID           NOT NULL,
         "organization_id" UUID           NOT NULL,

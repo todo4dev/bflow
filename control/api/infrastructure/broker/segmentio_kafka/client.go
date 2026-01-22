@@ -3,16 +3,18 @@ package segmentio_kafka
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"src/domain"
 	"src/port/broker"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
-type Client struct {
-	config Config
+type Client[TKind ~string] struct {
+	config *Config
 	writer *kafka.Writer
 	dialer *kafka.Dialer
 
@@ -21,19 +23,15 @@ type Client struct {
 	reader *kafka.Reader
 }
 
-var _ broker.Client = (*Client)(nil)
+var _ broker.Client[string] = (*Client[string])(nil)
 
-func NewClient(rawConfig *Config) (*Client, error) {
-	config, err := ConfigSchema.Validate(rawConfig)
-	if err != nil {
-		return nil, err
-	}
+func NewClient[TKind ~string](config *Config) (*Client[TKind], error) {
 	dialer := &kafka.Dialer{Timeout: 10 * time.Second, DualStack: true}
-	client := &Client{config: config, dialer: dialer}
+	client := &Client[TKind]{config: config, dialer: dialer}
 	return client, nil
 }
 
-func (c *Client) Connect(ctx context.Context) error {
+func (c *Client[TKind]) Connect(ctx context.Context) error {
 	// Initialize writer shared instance
 	c.writer = &kafka.Writer{
 		Addr:     kafka.TCP(c.config.Brokers...),
@@ -43,7 +41,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	return c.Ping(ctx)
 }
 
-func (c *Client) Ping(ctx context.Context) error {
+func (c *Client[TKind]) Ping(ctx context.Context) error {
 	if len(c.config.Brokers) == 0 {
 		return fmt.Errorf("no brokers configured")
 	}
@@ -56,14 +54,14 @@ func (c *Client) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client) Close() error {
+func (c *Client[TKind]) Close() error {
 	if c.writer != nil {
 		return c.writer.Close()
 	}
 	return nil
 }
 
-func (c *Client) Subscribe(topics ...string) error {
+func (c *Client[TKind]) Subscribe(topics ...TKind) error {
 	if c.reader != nil {
 		return errors.New("consumer already started, cannot subscribe")
 	}
@@ -71,14 +69,14 @@ func (c *Client) Subscribe(topics ...string) error {
 	// Apply prefix
 	prefixed := make([]string, len(topics))
 	for i, t := range topics {
-		prefixed[i] = c.config.TopicPrefix + t
+		prefixed[i] = c.config.TopicPrefix + string(t)
 	}
 
 	c.topics = append(c.topics, prefixed...)
 	return nil
 }
 
-func (c *Client) Consume(ctx context.Context, handler func(ctx context.Context, msg broker.Message) error) error {
+func (c *Client[TKind]) Consume(ctx context.Context, handler func(ctx context.Context, event domain.Event[TKind]) error) error {
 	if len(c.topics) == 0 {
 		return errors.New("no topics subscribed")
 	}
@@ -105,42 +103,48 @@ func (c *Client) Consume(ctx context.Context, handler func(ctx context.Context, 
 		default:
 			m, err := c.reader.FetchMessage(ctx)
 			if err != nil {
-				// If context canceled, stop
 				if errors.Is(err, context.Canceled) {
 					return nil
 				}
-				// Log error? Or continue? For now continue/return
-				// If connection lost, kafka-go retries automatically usually.
-				// If fatal, return err.
 				return err
 			}
 
-			// Process
-			headers := make(map[string]string)
+			// Reconstruct domain.Event
+			var occurredAt time.Time
+			var idempotencyKey string
+
 			for _, h := range m.Headers {
-				headers[h.Key] = string(h.Value)
+				switch h.Key {
+				case "OccurredAt":
+					occurredAt, _ = time.Parse(time.RFC3339, string(h.Value))
+				case "IdempotencyKey":
+					idempotencyKey = string(h.Value)
+				}
 			}
 
-			bMsg := broker.Message{
-				Key:     string(m.Key),
-				Value:   m.Value,
-				Headers: headers,
+			var payload any
+			if err := json.Unmarshal(m.Value, &payload); err != nil {
+				// Log error?
+				continue
 			}
 
-			if err := handler(ctx, bMsg); err != nil {
-				// Handler failed?
-				// Kafka-go AutoCommit assumes we process it.
-				// If we want manual commit, we should use CommitMessages.
-				// For now, FetchMessage + CommitMessages is safer than ReadMessage (auto-commit).
-				// BUT ReadMessage is simpler for "at least once" if we don't crash.
-				// Let's assume manual commit pattern for safety:
-				// Fetch -> Process -> Commit
-				// But interface doesn't expose commit control.
-				// Returning error from handler implies failure to process.
-				// We should NOT commit if handler failed.
-				// Retry?
-				// Simple approach: Log error and continue (lossy) or Retry loop?
-				// Let's implement basics: Fetch -> Handle -> Commit if success.
+			// Extract Kind from topic (remove prefix)
+			// Assuming prefix length is fixed or we can strip it.
+			// Currently prefix is c.config.TopicPrefix.
+			topic := m.Topic
+			kindStr := topic
+			if len(c.config.TopicPrefix) > 0 && len(topic) > len(c.config.TopicPrefix) {
+				kindStr = topic[len(c.config.TopicPrefix):]
+			}
+
+			event := domain.Event[TKind]{
+				Kind:           TKind(kindStr),
+				IdempotencyKey: idempotencyKey,
+				OccurredAt:     occurredAt,
+				Payload:        payload,
+			}
+
+			if err := handler(ctx, event); err != nil {
 				continue
 			}
 
@@ -151,32 +155,21 @@ func (c *Client) Consume(ctx context.Context, handler func(ctx context.Context, 
 	}
 }
 
-func (c *Client) Publish(ctx context.Context, topic string, key string, message []byte) error {
+func (c *Client[TKind]) Publish(ctx context.Context, event domain.Event[TKind]) error {
+	b, err := json.Marshal(event.Payload)
+	if err != nil {
+		return err
+	}
+
+	headers := []kafka.Header{
+		{Key: "OccurredAt", Value: []byte(event.OccurredAt.Format(time.RFC3339))},
+		{Key: "IdempotencyKey", Value: []byte(event.IdempotencyKey)},
+	}
+
 	msg := kafka.Message{
-		Topic: c.config.TopicPrefix + topic,
-		Key:   []byte(key),
-		Value: message,
+		Topic:   c.config.TopicPrefix + string(event.Kind),
+		Value:   b,
+		Headers: headers,
 	}
 	return c.writer.WriteMessages(ctx, msg)
-}
-
-func (c *Client) PublishBatch(ctx context.Context, topic string, messages []broker.Message) error {
-	msgs := make([]kafka.Message, len(messages))
-	fullTopic := c.config.TopicPrefix + topic
-
-	for i, m := range messages {
-		headers := make([]kafka.Header, 0, len(m.Headers))
-		for k, v := range m.Headers {
-			headers = append(headers, kafka.Header{Key: k, Value: []byte(v)})
-		}
-
-		msgs[i] = kafka.Message{
-			Topic:   fullTopic,
-			Key:     []byte(m.Key),
-			Value:   m.Value,
-			Headers: headers,
-		}
-	}
-
-	return c.writer.WriteMessages(ctx, msgs...)
 }

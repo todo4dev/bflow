@@ -1,4 +1,0 @@
-package deployment
-
-func Provide() {
-}

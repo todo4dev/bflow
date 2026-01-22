@@ -19,7 +19,7 @@
         "finished_at"                TIMESTAMPTZ(3)     NULL,
         "error_message"              TEXT               NULL,
         "pipeline_id"                UUID           NOT NULL,
-        "execution_cluster_agent_id" UUID           NOT NULL,
+        "execution_cluster_agent_id" UUID               NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("pipeline_id")                REFERENCES "pipeline"      ("id") ON DELETE CASCADE,

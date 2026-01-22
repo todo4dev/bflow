@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="create-table-cluster_agent_enrollment" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      CREATE TABLE "cluster_agent_enrollment" (
+        "id"         UUID           NOT NULL,
+        "ts"         TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
+        "token"      CHAR(32)       NOT NULL,
+        "expires_at" TIMESTAMPTZ(3) NOT NULL,
+        "used"       BOOLEAN        NOT NULL,
+        "cluster_id"         UUID           NOT NULL,
+        "creator_account_id" UUID           NOT NULL,
+        --
+        PRIMARY KEY ("id"),
+        FOREIGN KEY ("cluster_id")         REFERENCES "cluster" ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("creator_account_id") REFERENCES "account" ("id") ON DELETE CASCADE,
+        UNIQUE ("token")
+      );
+      CREATE INDEX "idx_cluster_agent_enrollment_cluster_id" ON "cluster_agent_enrollment" ("cluster_id");
+    ]]></sql>
+
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "cluster_agent_enrollment";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1768575000001" />
+  </changeSet>
+</databaseChangeLog>

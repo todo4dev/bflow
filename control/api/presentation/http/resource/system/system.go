@@ -1,4 +1,4 @@
-// presentation/http/route/system/system.go
+// presentation/http/resource/system/system.go
 package system
 
 import (

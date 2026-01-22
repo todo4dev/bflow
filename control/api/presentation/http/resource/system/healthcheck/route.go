@@ -1,7 +1,9 @@
+// presentation/http/resource/system/healthcheck/route.go
 package healthcheck
 
 import (
-	"src/application/system/usecase/healthcheck"
+	"errors"
+	"src/application/system/healthcheck"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,12 +37,12 @@ var Route = router.
 										Required("broker", func(item *oas.Schema) { item.String().Nullable().Example("failed to connect") }).
 										Required("storage", func(item *oas.Schema) { item.String().Nullable().Example("failed to connect") })
 								})
-						}).Example(fiber.Map{
-							"uptime": "1h15m30s",
-							"status": false,
-							"services": fiber.Map{
+						}).Example(healthcheck.Result{
+							Uptime: "1h15m30s",
+							Status: false,
+							Services: map[string]error{
 								"database": nil,
-								"cache":    "failed to connect",
+								"cache":    errors.New("failed to connect"),
 								"broker":   nil,
 								"storage":  nil,
 							},

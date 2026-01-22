@@ -1,4 +1,0 @@
-package signing
-
-func Provide() {
-}

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	aws_config "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
@@ -21,36 +21,33 @@ type Client struct {
 
 var _ storage.Client = (*Client)(nil)
 
-func NewClient(rawConfig Config) (*Client, error) {
-	cfg, err := ConfigSchema.Validate(rawConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	awsCfg, err := config.LoadDefaultConfig(context.Background(),
-		config.WithRegion(cfg.Region),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AccessKey, cfg.SecretKey, "")),
+func NewClient(config *Config) (*Client, error) {
+	awsConfig, err := aws_config.LoadDefaultConfig(context.Background(),
+		aws_config.WithRegion(config.Region),
+		aws_config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			config.AccessKey,
+			config.SecretKey,
+			"",
+		)),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := func(o *s3.Options) {
-		if cfg.Endpoint != nil {
-			o.BaseEndpoint = cfg.Endpoint
-			o.UsePathStyle = true // Force path style when using custom endpoint
+	client := s3.NewFromConfig(awsConfig, func(o *s3.Options) {
+		if config.Endpoint != nil {
+			o.BaseEndpoint = config.Endpoint
+			o.UsePathStyle = true
 		}
-		if cfg.ForcePathStyle {
-			o.UsePathStyle = cfg.ForcePathStyle
+		if config.ForcePathStyle {
+			o.UsePathStyle = config.ForcePathStyle
 		}
-	}
-
-	client := s3.NewFromConfig(awsCfg, opts)
+	})
 
 	return &Client{
 		client:        client,
 		presignClient: s3.NewPresignClient(client),
-		bucket:        cfg.Bucket,
+		bucket:        config.Bucket,
 	}, nil
 }
 

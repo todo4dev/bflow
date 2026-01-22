@@ -7,6 +7,7 @@ import (
 	"os"
 	"src/port/logging"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/rs/zerolog"
 )
 
@@ -16,12 +17,7 @@ type Logger struct {
 
 var _ logging.Logger = (*Logger)(nil)
 
-func NewLogger(rawConfig Config) (*Logger, error) {
-	config, err := ConfigSchema.Validate(rawConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func NewLogger(config *Config) (*Logger, error) {
 	level, err := zerolog.ParseLevel(config.Level)
 	if err != nil {
 		return nil, err
@@ -42,8 +38,8 @@ func NewLogger(rawConfig Config) (*Logger, error) {
 	}, nil
 }
 
-func (l *Logger) toZerologFields(fields []logging.Field) map[string]interface{} {
-	m := make(map[string]interface{}, len(fields))
+func (l *Logger) toZerologFields(fields []logging.Field) map[string]any {
+	m := make(map[string]any, len(fields))
 	for _, f := range fields {
 		m[f.Key] = f.Value
 	}
@@ -59,14 +55,17 @@ func (l *Logger) Info(ctx context.Context, msg string, fields ...logging.Field) 
 }
 
 func (l *Logger) Warn(ctx context.Context, msg string, fields ...logging.Field) {
+	sentry.CaptureMessage(msg)
 	l.logger.Warn().Fields(l.toZerologFields(fields)).Msg(msg)
 }
 
 func (l *Logger) Error(ctx context.Context, msg string, err error, fields ...logging.Field) {
+	sentry.CaptureException(err)
 	l.logger.Error().Err(err).Fields(l.toZerologFields(fields)).Msg(msg)
 }
 
 func (l *Logger) Fatal(ctx context.Context, msg string, err error, fields ...logging.Field) {
+	sentry.CaptureException(err)
 	l.logger.Fatal().Err(err).Fields(l.toZerologFields(fields)).Msg(msg)
 }
 

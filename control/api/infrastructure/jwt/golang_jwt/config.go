@@ -4,8 +4,18 @@ package golang_jwt
 import (
 	"time"
 
-	v "github.com/leandroluk/gox/validate"
+	"github.com/leandroluk/gox/validate"
 )
+
+var configSchema = validate.Object(func(t *Config, s *validate.ObjectSchema[Config]) {
+	s.Field(&t.Algorithm).Text().Required().OneOf("HS256", "RS256").Default("HS256")
+	s.Field(&t.Issuer).Text().Required().Default("issuer")
+	s.Field(&t.Audience).Text().Required().Default("audience")
+	s.Field(&t.PrivateKey).Text().Required().Default("key")
+	s.Field(&t.PublicKey).Text().Required().Default("key")
+	s.Field(&t.AccessTTL).Duration().Required().Min(time.Second).Default(time.Minute * 15)
+	s.Field(&t.RefreshTTL).Duration().Required().Min(time.Second).Default(time.Hour * 24)
+})
 
 type Config struct {
 	Algorithm  string
@@ -17,12 +27,7 @@ type Config struct {
 	RefreshTTL time.Duration
 }
 
-var ConfigSchema = v.Object(func(t *Config, s *v.ObjectSchema[Config]) {
-	s.Field(&t.Algorithm).Text().Required().OneOf("HS256", "RS256").Default("HS256")
-	s.Field(&t.Issuer).Text().Required().Default("issuer")
-	s.Field(&t.Audience).Text().Required().Default("audience")
-	s.Field(&t.PrivateKey).Text().Required().Default("key")
-	s.Field(&t.PublicKey).Text().Required().Default("key")
-	s.Field(&t.AccessTTL).Duration().Required().Min(time.Second).Default(time.Minute * 15)
-	s.Field(&t.RefreshTTL).Duration().Required().Min(time.Second).Default(time.Hour * 24)
-})
+func (c *Config) Validate() (err error) {
+	_, err = configSchema.Validate(c)
+	return err
+}

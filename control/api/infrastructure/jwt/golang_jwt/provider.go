@@ -32,12 +32,7 @@ type Provider struct {
 
 var _ jwt.Provider = (*Provider)(nil)
 
-func NewProvider(rawConfig Config) (*Provider, error) {
-	config, err := ConfigSchema.Validate(rawConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func NewProvider(config *Config) (*Provider, error) {
 	algorithm, ok := (map[any]lib.SigningMethod{
 		"HS256": lib.SigningMethodHS256,
 		"RS256": lib.SigningMethodRS256,

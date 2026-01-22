@@ -16,7 +16,7 @@
         "status"       VARCHAR(10)    NOT NULL,
         "version"      VARCHAR(50)    NOT NULL,
         "last_seen_at" TIMESTAMPTZ(3)     NULL,
-        "public_key"   TEXT               NULL,
+        "public_key"   TEXT           NOT NULL,
         "metadata"     JSONB              NULL,
         "cluster_id"   UUID           NOT NULL,
         --

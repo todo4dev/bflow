@@ -16,12 +16,7 @@ type Client struct {
 
 var _ cache.Client = (*Client)(nil)
 
-func NewClient(rawConfig GoRedisConfig) (*Client, error) {
-	config, err := GoRedisConfigSchema.Validate(rawConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func NewClient(config *Config) (*Client, error) {
 	opts, err := redis.ParseURL(config.URL)
 	if err != nil {
 		return nil, err
@@ -40,12 +35,40 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	return c.client.Set(ctx, key, value, ttl).Err()
 }
 
-func (c *Client) Get(ctx context.Context, key string) (string, error) {
-	return c.client.Get(ctx, key).Result()
+func (c *Client) findKey(ctx context.Context, match string) (string, error) {
+	// Use Scan to find a matching key safely
+	iter := c.client.Scan(ctx, 0, match, 1).Iterator()
+	if iter.Next(ctx) {
+		return iter.Val(), nil
+	}
+	if err := iter.Err(); err != nil {
+		return "", err
+	}
+	return "", redis.Nil
 }
 
-func (c *Client) GetBytes(ctx context.Context, key string) ([]byte, error) {
-	return c.client.Get(ctx, key).Bytes()
+func (c *Client) Get(ctx context.Context, match string) (string, string, error) {
+	key, err := c.findKey(ctx, match)
+	if err != nil {
+		return "", "", err
+	}
+	val, err := c.client.Get(ctx, key).Result()
+	if err != nil {
+		return "", "", err
+	}
+	return key, val, nil
+}
+
+func (c *Client) GetBytes(ctx context.Context, match string) (string, []byte, error) {
+	key, err := c.findKey(ctx, match)
+	if err != nil {
+		return "", nil, err
+	}
+	val, err := c.client.Get(ctx, key).Bytes()
+	if err != nil {
+		return "", nil, err
+	}
+	return key, val, nil
 }
 
 func (c *Client) Delete(ctx context.Context, keys ...string) error {

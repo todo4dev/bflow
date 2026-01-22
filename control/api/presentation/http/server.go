@@ -1,12 +1,8 @@
+// presentation/http/server.go
 package http
 
 import (
-	"src/presentation/http/resource/billing"
-	"src/presentation/http/resource/deployment"
-	"src/presentation/http/resource/identity"
-	"src/presentation/http/resource/signing"
-	"src/presentation/http/resource/system"
-	"src/presentation/http/resource/tenant"
+	"src/presentation/http/resource"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,14 +21,7 @@ func NewServer() *Server {
 	})
 	a.Use(recover.New())
 
-	r := router.Wrapper(a,
-		billing.Group,
-		deployment.Group,
-		identity.Group,
-		signing.Group,
-		system.Group,
-		tenant.Group,
-	)
+	r := router.Wrapper(a, resource.Routes)
 
 	return &Server{app: a, router: r}
 }

@@ -1,3 +1,4 @@
+// infrastructure/jwt/jwt.go
 package jwt
 
 import (
@@ -23,13 +24,15 @@ func Provide() {
 			AccessTTL:  time.Duration(env.Get("JWT_ACCESS_TTL_SECONDS", 900)) * time.Second,
 			RefreshTTL: time.Duration(env.Get("JWT_REFRESH_TTL_SECONDS", 86400)) * time.Second,
 		}
-		if _, err := golang_jwt.ConfigSchema.Validate(&config); err != nil {
-			panic(err)
+		if err := config.Validate(); err != nil {
+			panic(fmt.Errorf("jwt config validation failed: %w", err))
 		}
-		instance, err := golang_jwt.NewProvider(config)
+
+		instance, err := golang_jwt.NewProvider(&config)
 		if err != nil {
 			panic(fmt.Errorf("failed to create jwt provider: %w", err))
 		}
+
 		di.SingletonAs[jwt.Provider](func() jwt.Provider { return instance })
 	default:
 		panic(fmt.Errorf("invalid 'JWT_PROVIDER': %s", provider))

@@ -1,3 +1,4 @@
+// infrastructure/infrastructure.go
 package infrastructure
 
 import (
@@ -6,7 +7,7 @@ import (
 	"src/infrastructure/database"
 	"src/infrastructure/jwt"
 	"src/infrastructure/logging"
-	"src/infrastructure/mailer"
+	"src/infrastructure/mailing"
 	"src/infrastructure/oidc"
 	"src/infrastructure/storage"
 )
@@ -17,7 +18,7 @@ func Provide() {
 	database.Provide()
 	jwt.Provide()
 	logging.Provide()
-	mailer.Provide()
+	mailing.Provide()
 	oidc.Provide()
 	storage.Provide()
 }

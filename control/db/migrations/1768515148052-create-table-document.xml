@@ -22,11 +22,13 @@
         "content_sha256"       TEXT           NOT NULL,
         "metadata"             JSONB              NULL,
         "replaced_document_id" UUID               NULL,
-        "organization_id"      UUID               NULL,
+        "organization_id"      UUID           NOT NULL,
+        "creator_account_id"   UUID           NOT NULL,
         --
         PRIMARY KEY ("id"),
         FOREIGN KEY ("replaced_document_id") REFERENCES "document"     ("id") ON DELETE SET NULL,
-        FOREIGN KEY ("organization_id")      REFERENCES "organization" ("id") ON DELETE SET NULL
+        FOREIGN KEY ("organization_id")      REFERENCES "organization" ("id") ON DELETE SET NULL,
+        FOREIGN KEY ("creator_account_id")   REFERENCES "account"      ("id") ON DELETE SET NULL
       );
       CREATE INDEX "idx_document_organization_id"       ON "document" ("organization_id")      WHERE "deleted_at" IS NULL AND "organization_id" IS NOT NULL;
       CREATE INDEX "idx_document_replaced_document_id"  ON "document" ("replaced_document_id") WHERE "deleted_at" IS NULL AND "replaced_document_id" IS NOT NULL;

@@ -1,14 +1,19 @@
 // infrastructure/logging/rs_zerolog/config.go
 package rs_zerolog
 
-import v "github.com/leandroluk/gox/validate"
+import "github.com/leandroluk/gox/validate"
+
+var configSchema = validate.Object(func(t *Config, s *validate.ObjectSchema[Config]) {
+	s.Field(&t.Level).Text().OneOf("debug", "info", "warn", "error").Default("info")
+	s.Field(&t.ServiceName).Text().Required()
+})
 
 type Config struct {
 	Level       string
 	ServiceName string
 }
 
-var ConfigSchema = v.Object(func(t *Config, s *v.ObjectSchema[Config]) {
-	s.Field(&t.Level).Text().OneOf("debug", "info", "warn", "error").Default("info")
-	s.Field(&t.ServiceName).Text().Required()
-})
+func (c *Config) Validate() (err error) {
+	_, err = configSchema.Validate(c)
+	return err
+}

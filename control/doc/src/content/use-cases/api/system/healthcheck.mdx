@@ -25,12 +25,13 @@ This endpoint is used by load balancers, container orchestrators, and monitoring
 - **Response Body:**
   ```json
   {
-    "status": "UP",
-    "timestamp": "2023-10-27T10:00:00Z",
-    "components": {
-      "database": "UP",
-      "cache": "UP",
-      "stream": "UP"
+    "uptime": "1h30m",
+    "status": true,
+    "services": {
+      "database": null,
+      "cache": null,
+      "broker": null,
+      "storage": null
     }
   }
   ```
@@ -44,12 +45,13 @@ This endpoint is used by load balancers, container orchestrators, and monitoring
 
   ```json
   {
-    "status": "DOWN",
-    "timestamp": "2023-10-27T10:00:05Z",
-    "components": {
-      "database": "DOWN",
-      "cache": "UP",
-      "stream": "UP"
+    "uptime": "1h30m",
+    "status": false,
+    "services": {
+      "database": "failed to connect",
+      "cache": null,
+      "broker": null,
+      "storage": null
     }
   }
   ```

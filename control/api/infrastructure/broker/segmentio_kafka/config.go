@@ -1,7 +1,13 @@
 // infrastructure/broker/segmentio_kafka/config.go
 package segmentio_kafka
 
-import v "github.com/leandroluk/gox/validate"
+import "github.com/leandroluk/gox/validate"
+
+var configSchema = validate.Object(func(t *Config, s *validate.ObjectSchema[Config]) {
+	s.Field(&t.Brokers).Array(validate.Text()).Required().Min(1)
+	s.Field(&t.TopicPrefix).Text().Default("")
+	s.Field(&t.ConsumerGroupID).Text().Required()
+})
 
 type Config struct {
 	Brokers         []string
@@ -9,8 +15,7 @@ type Config struct {
 	ConsumerGroupID string
 }
 
-var ConfigSchema = v.Object(func(t *Config, s *v.ObjectSchema[Config]) {
-	s.Field(&t.Brokers).Array(v.Text()).Required().Min(1)
-	s.Field(&t.TopicPrefix).Text().Default("")
-	s.Field(&t.ConsumerGroupID).Text().Required()
-})
+func (c *Config) Validate() (err error) {
+	_, err = configSchema.Validate(c)
+	return err
+}

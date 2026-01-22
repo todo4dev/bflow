@@ -1,3 +1,4 @@
+// infrastructure/broker/broker.go
 package broker
 
 import (
@@ -19,15 +20,17 @@ func Provide() {
 			TopicPrefix:     env.Get("BROKER_TOPIC_PREFIX", ""),
 			ConsumerGroupID: env.Get("BROKER_CONSUMER_GROUP_ID", ""),
 		}
-		if _, err := segmentio_kafka.ConfigSchema.Validate(&config); err != nil {
-			panic(err)
+		if err := config.Validate(); err != nil {
+			panic(fmt.Errorf("broker config validation failed: %w", err))
 		}
 
-		instance, err := segmentio_kafka.NewClient(&config)
+		instance, err := segmentio_kafka.NewClient[string](&config)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("failed to create broker client: %w", err))
 		}
-		di.SingletonAs[broker.Client](func() broker.Client { return instance })
+
+		di.SingletonGeneric[broker.Client[string]](instance)
+
 	// case "mocking_impl":
 	// case "another_broker_impl":
 	default:

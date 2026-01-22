@@ -5,16 +5,30 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/leandroluk/gox/util"
 )
 
 type Event[TKind ~string] struct {
-	Kind       TKind     `json:"kind"`
-	OccurredAt time.Time `json:"occurred_at"`
-	Payload    any       `json:"payload"`
+	Kind           TKind     `json:"kind"`
+	IdempotencyKey string    `json:"idempotency_key"`
+	OccurredAt     time.Time `json:"occurred_at"`
+	Payload        any       `json:"payload"`
 }
 
-func NewEvent[TKind ~string](kind TKind, payload any) Event[TKind] {
-	return Event[TKind]{Kind: kind, OccurredAt: time.Now(), Payload: payload}
+func NewEvent[TKind ~string](kind TKind, payload any, optionalIdempotencyKey ...string) Event[TKind] {
+	event := Event[TKind]{
+		Kind:       kind,
+		OccurredAt: time.Now(),
+		Payload:    payload,
+	}
+	if len(optionalIdempotencyKey) > 0 {
+		event.IdempotencyKey = optionalIdempotencyKey[0]
+	} else {
+		event.IdempotencyKey = util.Must(uuid.NewV7()).String()
+	}
+	return event
 }
 
 type DecoderFunc func(payload any) (any, error)
@@ -62,3 +76,4 @@ func JSONDecoder[TPayload any]() DecoderFunc {
 		return out, nil
 	}
 }
+
