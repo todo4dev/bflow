@@ -17,9 +17,9 @@ type Server struct {
 func NewServer() *Server {
 	a := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
-		ErrorHandler:          errorHandler,
+		ErrorHandler:          router.ErrorHandler(),
 	})
-	a.Use(recover.New())
+	a.Use(recover.New(recover.Config{EnableStackTrace: true}))
 
 	r := router.Wrapper(a, resource.Routes)
 

@@ -1,14 +1,14 @@
-package activate_account
+// presentation/http/resource/auth/resend_activation_code/resend_activation_code.go
+package resend_activation_code
 
 import (
-	usecase "src/application/auth/activate_account"
+	usecase "src/application/auth/resend_activation_code"
 	"src/domain/issue"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/oas"
-	"github.com/leandroluk/gox/validate"
 )
 
 func handler(c *fiber.Ctx) error {
@@ -16,23 +16,22 @@ func handler(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
-	_, err := di.Resolve[*usecase.Handler]().Handle(c.UserContext(), &data)
+
+	_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data)
 	if err != nil {
 		return err
 	}
-	return c.SendStatus(fiber.StatusOK)
+
+	return c.SendStatus(fiber.StatusAccepted)
 }
 
 func operation(o *oas.Operation) {
-	o.Tags("Auth").Summary("Activate account").
-		Description("Activate account using OTP sent by email")
+	o.Tags("Auth").Summary("Resend Activation Code").
+		Description("Resends the activation code to the user's email address.")
 	router.BodyJson(o, router.SchemaAs[usecase.Data]())
-	router.ResponseStatus(o, fiber.StatusOK, "Account activated")
-	router.ResponseIssueAs[*validate.ValidationError](o, fiber.StatusBadRequest)
+	router.ResponseStatus(o, fiber.StatusAccepted, "Activation code sent")
 	router.ResponseIssueAs[*issue.AccountNotFound](o, fiber.StatusNotFound)
 	router.ResponseIssueAs[*issue.AccountAlreadyActivated](o, fiber.StatusNotAcceptable)
-	router.ResponseIssueAs[*issue.AccountInvalidOTP](o, fiber.StatusConflict)
-	router.ResponseStatus(o, fiber.StatusUnprocessableEntity, "Unprocessable entity")
 }
 
 var Route = router.

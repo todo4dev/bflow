@@ -125,6 +125,6 @@ func init() {
 		meta.Example(data))
 
 	meta.Describe(&Handler{}, meta.Description("Activating account usecase"),
-		meta.Throws[issue.AccountInvalidOTP](issue.AccountInvalidOTP_MESSAGE),
-		meta.Throws[issue.AccountNotFound](issue.AccountNotFound_MESSAGE))
+		meta.Throws[*issue.AccountInvalidOTP](),
+		meta.Throws[*issue.AccountNotFound]())
 }

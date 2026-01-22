@@ -176,11 +176,10 @@ func init() {
 		Email:    "john.doe@email.com",
 		Password: "Password123!"}
 	meta.Describe(&data, meta.Description("Data for registering a new account"),
-		meta.Field(&data.Email, meta.Description("Email address")),
-		meta.Field(&data.Password, meta.Description("Password")),
+		meta.Field(&data.Email, meta.Description("Email address to create the account")),
+		meta.Field(&data.Password, meta.Description("Account password")),
 		meta.Example(data))
 
 	meta.Describe(&Handler{}, meta.Description("Handler for registering a new account"),
-		meta.Throws[issue.AccountEmailInUse](issue.AccountEmailInUse_MESSAGE),
-	)
+		meta.Throws[*issue.AccountEmailInUse]())
 }

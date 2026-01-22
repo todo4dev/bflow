@@ -1,15 +1,15 @@
 package issue
 
-type AccountAlreadyActivated struct{}
-
-func (e *AccountAlreadyActivated) Error() string {
-	return "Account already activated"
-}
-
 type AccountNotFound struct{}
 
 func (e *AccountNotFound) Error() string {
 	return "Account not found"
+}
+
+type AccountAlreadyActivated struct{}
+
+func (e *AccountAlreadyActivated) Error() string {
+	return "Account already activated"
 }
 
 type AccountEmailInUse struct{}

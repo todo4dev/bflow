@@ -1,9 +1,14 @@
 github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NBk=
-github.com/leandroluk/gox/di v0.7.6/go.mod h1:n/3uTENEbam4GSFe3kEwdOQ2hhR1uaMHzFMTB9bvAP4=
-github.com/leandroluk/gox/env v0.7.6/go.mod h1:sSHePWgO7uexKvxhpxUp1SMKhK/K503b/wfvBzol8dE=
+github.com/leandroluk/gox/di v0.7.10/go.mod h1:n/3uTENEbam4GSFe3kEwdOQ2hhR1uaMHzFMTB9bvAP4=
+github.com/leandroluk/gox/env v0.7.10/go.mod h1:sSHePWgO7uexKvxhpxUp1SMKhK/K503b/wfvBzol8dE=
+github.com/leandroluk/gox/oas v0.7.10/go.mod h1:rqdiFV8iiK9hJdLi+QBMndekr7LfUumx3povKWMTYfY=
+github.com/leandroluk/gox/util v0.7.10 h1:BDvD6axIaje5LPJvC9xR5k7MwuQgXSvrPEIcsoJCKbU=
+github.com/leandroluk/gox/util v0.7.10/go.mod h1:aIfntwQg6f+LFZqz7cpbfDpziiHTEcsqyQB0DwWNFaE=
+github.com/leandroluk/gox/validate v0.7.10/go.mod h1:ZRdkRY0s4PIsxVmFbTfIXjY9pFtvxma37WiL0huWIas=
 github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c/go.mod h1:RqIHx9QI14HlwKwm98g9Re5prTQ6LdeRQn+gXJFxsJM=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
+github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
 github.com/tinylib/msgp v1.2.5/go.mod h1:ykjzy2wzgrlvpDCRc4LA8UXy6D8bzMSuAF3WD57Gok0=
 github.com/valyala/tcplisten v1.0.0/go.mod h1:T0xQ8SeCZGxckz9qRXTfG43PvQ/mcWh7FwZEA7Ioqkc=
 golang.org/x/crypto v0.46.0/go.mod h1:Evb/oLKmMraqjZ2iQTwDwvCtJkczlDuTmdJXoZVzqU0=

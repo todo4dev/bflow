@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"src/domain"
+	"src/domain/entity"
 	"src/domain/event"
 	"src/domain/issue"
 	"src/port/broker"
@@ -14,6 +15,7 @@ import (
 	"src/port/mailing"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
 
@@ -49,6 +51,20 @@ func New(
 	}
 }
 
+func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
+	account, err := h.domainUow.Account().FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, &issue.AccountNotFound{}
+	}
+	if account.EmailVerifiedAt != nil {
+		return nil, &issue.AccountAlreadyActivated{}
+	}
+	return account, nil
+}
+
 func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
 	otp := uuid.New().String()[:6]
 	key := fmt.Sprintf("account:%s:otp:%s", accountID.String(), otp)
@@ -70,16 +86,9 @@ func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
 		return nil, err
 	}
 
-	account, err := h.domainUow.Account().FindByEmail(data.Email)
+	account, err := h.findAccountByEmail(data.Email)
 	if err != nil {
 		return nil, err
-	}
-	if account == nil {
-		return nil, &issue.AccountNotFound{}
-	}
-
-	if account.EmailVerifiedAt != nil {
-		return nil, &issue.AccountAlreadyActivated{}
 	}
 
 	otp, err := h.createOTP(ctx, account.ID)
@@ -92,4 +101,17 @@ func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func init() {
+	data := Data{
+		Email: "john.doe@email.com",
+	}
+	meta.Describe(&data, meta.Description("Resend activation code Data"),
+		meta.Field(&data.Email, meta.Description("Account email")),
+		meta.Example(data))
+
+	meta.Describe(&Handler{}, meta.Description("Handler for resending activation code"),
+		meta.Throws[*issue.AccountNotFound](),
+		meta.Throws[*issue.AccountAlreadyActivated]())
 }

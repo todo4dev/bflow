@@ -12,20 +12,24 @@ import (
 	"github.com/leandroluk/gox/oas"
 )
 
+func handler(c *fiber.Ctx) error {
+	email, _ := url.QueryUnescape(c.Params("email"))
+	data := &usecase.Data{Email: email}
+	_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), data)
+	if err != nil {
+		return err
+	}
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func operation(o *oas.Operation) {
+	o.Tags("Auth").Summary("Check Email Availability").
+		Description("Verifies whether an email address is available for registration.")
+	router.InPath(o, "email", func(s *oas.Schema) { s.String().Example("john.doe@email.com") })
+	router.ResponseStatus(o, fiber.StatusOK, "Email is available")
+	router.ResponseIssueAs[*issue.AccountEmailInUse](o, fiber.StatusConflict)
+}
+
 var Route = router.
-	Route(func(c *fiber.Ctx) error {
-		email, _ := url.QueryUnescape(c.Params("email"))
-		data := &usecase.Data{Email: email}
-		_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), data)
-		if err != nil {
-			return err
-		}
-		return c.SendStatus(fiber.StatusOK)
-	}).
-	Operation(func(o *oas.Operation) {
-		o.Tags("Auth").Summary("Check Email Availability").
-			Description("Verifies whether an email address is available for registration.")
-		router.InPath(o, "email", func(s *oas.Schema) { s.String().Example("john.doe@email.com") })
-		router.ResponseStatus(o, fiber.StatusOK, "Email is available")
-		router.ResponseIssueAs[*issue.AccountEmailInUse](o, fiber.StatusConflict)
-	})
+	Route(handler).
+	Operation(operation)

@@ -53,5 +53,5 @@ func init() {
 		meta.Field(&data.Email, meta.Description("Email to check")),
 		meta.Example(data))
 	meta.Describe(&Handler{}, meta.Description("Handler for checking email availability"),
-		meta.Throws[issue.AccountEmailInUse](issue.AccountEmailInUse_MESSAGE))
+		meta.Throws[*issue.AccountEmailInUse]())
 }

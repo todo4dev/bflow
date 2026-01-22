@@ -26,3 +26,4 @@ control/
 - não preciso de exemplos de código que não foram solicitados
 - simplifique a resposta ao máximo possível
 - sempre que for solicitado um retorno em markdown adicione 4 espaços no começo de cada linha para evitar mesclar o markdown com o do prompt
+- **NUNCA INICIE UMA ETAPA DE IMPLEMENTAÇÃO DE ALGUM ARQUIVO SEM A SOLICITAÇÃO DE FORMA EXPLÍCITA DO PLANO DE IMPLEMENTAÇÃO E UM COMANDO CLARO PARA INICIAR A CODIFICAÇÃO (EX: "pode implementar").**
