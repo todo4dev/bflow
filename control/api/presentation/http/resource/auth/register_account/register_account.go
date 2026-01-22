@@ -33,6 +33,6 @@ var Route = router.
 				Property("email", func(p *oas.Schema) { p.String().Format("email") }).
 				Property("password", func(p *oas.Schema) { p.String().MinLength(8).MaxLength(50) })
 		})
-		router.ResponseStatus(o, "201", "Account created successfully")
-		router.ResponseIssue[*issue.AccountEmailInUse](o, "409")
+		router.ResponseStatus(o, fiber.StatusCreated, "Account created successfully")
+		router.ResponseIssueAs[*issue.AccountEmailInUse](o, fiber.StatusConflict)
 	})

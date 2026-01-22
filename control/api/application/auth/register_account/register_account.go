@@ -18,6 +18,7 @@ import (
 	"src/port/mailing"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/util"
 	"github.com/leandroluk/gox/validate"
 	"golang.org/x/crypto/bcrypt"
@@ -168,4 +169,18 @@ func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func init() {
+	data := Data{
+		Email:    "john.doe@email.com",
+		Password: "Password123!"}
+	meta.Describe(&data, meta.Description("Data for registering a new account"),
+		meta.Field(&data.Email, meta.Description("Email address")),
+		meta.Field(&data.Password, meta.Description("Password")),
+		meta.Example(data))
+
+	meta.Describe(&Handler{}, meta.Description("Handler for registering a new account"),
+		meta.Throws[issue.AccountEmailInUse](issue.AccountEmailInUse_MESSAGE),
+	)
 }

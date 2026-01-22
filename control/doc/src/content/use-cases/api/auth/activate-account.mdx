@@ -1,0 +1,94 @@
+---
+title: Activate Account
+---
+
+# Activate Account
+
+Activates a registered account using the email and the OTP code received.
+
+## Description
+
+This endpoint activates a user's account by verifying the One-Time Password (OTP) sent to their email. If successful, the account status is updated to active.
+
+## Rules
+
+- The endpoint must be accessed via a `PATCH` request.
+- **Email**: Must be a valid email format.
+- **OTP**: Must be the valid code sent to the email.
+- The OTP is temporary and matches the one stored in the cache.
+- The account must exist and not be already activated.
+
+## Request
+
+- **Method:** `PATCH`
+- **Path:** `/auth/activate`
+- **Body:** `application/json`
+
+| Field | Type   | Required | Description                     |
+|-------|--------|----------|---------------------------------|
+| email | string | Yes      | The user's email address.       |
+| otp   | string | Yes      | The activation code received.   |
+
+### Example
+
+```json
+{
+  "email": "john.doe@email.com",
+  "otp": "123456"
+}
+```
+
+## Success Case
+
+**Condition:** valid email, valid OTP, account exists and is not verified.
+
+- **HTTP Status:** `200 OK`
+- **Response Body:** Empty
+
+## Error Cases
+
+### Account Not Found
+
+**Condition:** The provided email is not registered.
+
+- **HTTP Status:** `404 Not Found`
+- **Response Body:**
+  ```json
+  {
+    "code": "AccountNotFound",
+    "message": "Account not found"
+  }
+  ```
+
+### Account Already Activated
+
+**Condition:** The account is already verified.
+
+- **HTTP Status:** `406 Not Acceptable`
+- **Response Body:**
+  ```json
+  {
+    "code": "AccountAlreadyActivated",
+    "message": "Account already activated"
+  }
+  ```
+
+### Invalid OTP
+
+**Condition:** The provided OTP is incorrect or expired.
+
+- **HTTP Status:** `409 Conflict`
+- **Response Body:**
+  ```json
+  {
+    "code": "AccountInvalidOTP",
+    "message": "Invalid OTP code"
+  }
+  ```
+
+### Invalid Data
+
+**Condition:** Email format invalid or missing fields.
+
+- **HTTP Status:** `422 Unprocessable Entity`
+- **Response Body:** Validation error details.

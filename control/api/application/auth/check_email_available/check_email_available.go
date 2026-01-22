@@ -7,6 +7,7 @@ import (
 	"src/domain/issue"
 	"src/domain/repository"
 
+	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
 
@@ -22,8 +23,12 @@ type Handler struct {
 	accountRepo repository.Account
 }
 
-func New(accountRepo repository.Account) *Handler {
-	return &Handler{accountRepo: accountRepo}
+func New(
+	accountRepo repository.Account,
+) *Handler {
+	return &Handler{
+		accountRepo: accountRepo,
+	}
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
@@ -39,4 +44,14 @@ func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
 		return nil, &issue.AccountEmailInUse{}
 	}
 	return nil, nil
+}
+
+func init() {
+	data := Data{
+		Email: "john.doe@email.com"}
+	meta.Describe(&data, meta.Description("Data for checking email availability"),
+		meta.Field(&data.Email, meta.Description("Email to check")),
+		meta.Example(data))
+	meta.Describe(&Handler{}, meta.Description("Handler for checking email availability"),
+		meta.Throws[issue.AccountEmailInUse](issue.AccountEmailInUse_MESSAGE))
 }

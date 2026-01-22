@@ -30,9 +30,9 @@ var Route = router.
 				Property("email", func(p *oas.Schema) { p.String().Format("email") }).
 				Property("otp", func(p *oas.Schema) { p.String() })
 		})
-		router.ResponseStatus(o, "200", "Account activated")
+		router.ResponseStatus(o, fiber.StatusOK, "Account activated")
 		router.ResponseValidationError(o)
-		router.ResponseIssue[*issue.AccountNotFound](o, "404")
-		router.ResponseIssue[*issue.AccountAlreadyActivated](o, "406")
-		router.ResponseIssue[*issue.AccountInvalidOTP](o, "409")
+		router.ResponseIssueAs[*issue.AccountNotFound](o, fiber.StatusNotFound)
+		router.ResponseIssueAs[*issue.AccountAlreadyActivated](o, fiber.StatusNotAcceptable)
+		router.ResponseIssueAs[*issue.AccountInvalidOTP](o, fiber.StatusConflict)
 	})

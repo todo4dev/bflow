@@ -26,6 +26,6 @@ var Route = router.
 		o.Tags("Auth").Summary("Check Email Availability").
 			Description("Verifies whether an email address is available for registration.")
 		router.InPath(o, "email", func(s *oas.Schema) { s.String().Example("john.doe@email.com") })
-		router.ResponseStatus(o, "200", "Email is available")
-		router.ResponseIssue[*issue.AccountEmailInUse](o, "409")
+		router.ResponseStatus(o, fiber.StatusOK, "Email is available")
+		router.ResponseIssueAs[*issue.AccountEmailInUse](o, fiber.StatusConflict)
 	})

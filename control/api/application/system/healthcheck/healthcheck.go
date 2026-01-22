@@ -11,11 +11,11 @@ import (
 	"src/port/cache"
 	"src/port/database"
 	"src/port/storage"
+
+	"github.com/leandroluk/gox/meta"
 )
 
 var startTime time.Time
-
-func init() { startTime = time.Now() }
 
 type pinger interface {
 	Ping(ctx context.Context) error
@@ -73,4 +73,22 @@ func (u *Handler) Handle(ctx context.Context) (*Result, error) {
 		return nil, errors.New(message.String())
 	}
 	return &result, nil
+}
+
+func init() {
+	startTime = time.Now()
+
+	result := Result{
+		Uptime: time.Since(startTime).String(),
+		Status: true,
+		Services: map[string]error{
+			"database": nil,
+			"cache":    errors.New("failed to connect"),
+			"broker":   nil,
+			"storage":  nil}}
+	meta.Describe(&result, meta.Description("Result of health check"),
+		meta.Field(&result.Uptime, meta.Description("Uptime of the application")),
+		meta.Field(&result.Status, meta.Description("Status of the application")),
+		meta.Field(&result.Services, meta.Description("Services of the application")),
+		meta.Example(result))
 }

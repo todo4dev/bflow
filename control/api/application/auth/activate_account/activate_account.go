@@ -15,6 +15,7 @@ import (
 	"src/port/logging"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
 
@@ -112,4 +113,18 @@ func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func init() {
+	data := Data{
+		Email: "john.doe@email.com",
+		OTP:   "123456"}
+	meta.Describe(&data, meta.Description("Activate account data"),
+		meta.Field(&data.Email, meta.Description("Email address")),
+		meta.Field(&data.OTP, meta.Description("One-Time Password")),
+		meta.Example(data))
+
+	meta.Describe(&Handler{}, meta.Description("Activating account usecase"),
+		meta.Throws[issue.AccountInvalidOTP](issue.AccountInvalidOTP_MESSAGE),
+		meta.Throws[issue.AccountNotFound](issue.AccountNotFound_MESSAGE))
 }
