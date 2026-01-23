@@ -52,18 +52,18 @@ func (rd *RouteDefinition) Operation(spec func(*oas.Operation)) *RouteDefinition
 
 func Wrapper(app *fiber.App, groupBlocks ...[]GroupDefinition) *Router {
 	c := Config{
-		Port:                env.Get("SERVER_PORT", 3000),
-		BasePath:            env.Get("SERVER_BASE_PATH", "/"),
-		EnableSwagger:       env.Get("SERVER_ENABLE_SWAGGER", "true") == "true",
-		SwaggerPath:         env.Get("SERVER_SWAGGER_PATH", "/docs"),
-		SwaggerTitle:        env.Get("SERVER_SWAGGER_TITLE", "Bflow - Control Plane API"),
-		SwaggerDescription:  env.Get("SERVER_SWAGGER_DESCRIPTION", "API for Control Plane of Bflow solution"),
-		SwaggerContactName:  env.Get("SERVER_SWAGGER_CONTACT_NAME", "Leandro Santiago Gomes"),
-		SwaggerContactURL:   env.Get("SERVER_SWAGGER_CONTACT_URL", "https://github.com/leandroluk"),
-		SwaggerContactEmail: env.Get("SERVER_SWAGGER_CONTACT_EMAIL", "leandroluk@gmail.com"),
-		SwaggerLicenseName:  env.Get("SERVER_SWAGGER_LICENSE_NAME", "MIT"),
-		SwaggerLicenseURL:   env.Get("SERVER_SWAGGER_LICENSE_URL", "https://opensource.org/licenses/MIT"),
-		SwaggerVersion:      env.Get("SERVER_SWAGGER_VERSION", "1.0.0"),
+		Port:                env.Get("API_PORT", 30000),
+		BasePath:            env.Get("API_BASE_PATH", "/"),
+		EnableSwagger:       env.Get("API_OPENAPI_ENABLE", "true") == "true",
+		SwaggerPath:         env.Get("API_OPENAPI_PATH", "/docs"),
+		SwaggerTitle:        env.Get("API_OPENAPI_TITLE", "Bflow - Control Plane API"),
+		SwaggerDescription:  env.Get("API_OPENAPI_DESCRIPTION", "API for Control Plane of Bflow solution"),
+		SwaggerContactName:  env.Get("API_OPENAPI_CONTACT_NAME", "Leandro Santiago Gomes"),
+		SwaggerContactURL:   env.Get("API_OPENAPI_CONTACT_URL", "https://github.com/leandroluk"),
+		SwaggerContactEmail: env.Get("API_OPENAPI_CONTACT_EMAIL", "leandroluk@gmail.com"),
+		SwaggerLicenseName:  env.Get("API_OPENAPI_LICENSE_NAME", "MIT"),
+		SwaggerLicenseURL:   env.Get("API_OPENAPI_LICENSE_URL", "https://opensource.org/licenses/MIT"),
+		SwaggerVersion:      env.Get("API_OPENAPI_VERSION", "1.0.0"),
 	}
 	if err := c.Validate(); err != nil {
 		panic(err)

@@ -12,12 +12,12 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("CACHE_PROVIDER", "go_redis")
+	provider := env.Get("API_CACHE_PROVIDER", "go_redis")
 	switch provider {
 	case "go_redis":
 		config := go_redis.Config{
-			URL: env.Get("CACHE_URL", "redis://localhost:6379"),
-			TTL: time.Duration(env.Get("CACHE_TTL_SECONDS", 900)) * time.Second,
+			URL: env.Get("API_CACHE_URL", "redis://localhost:6379"),
+			TTL: time.Duration(env.Get("API_CACHE_TTL_SECONDS", 900)) * time.Second,
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("cache config validation failed: %w", err))
@@ -30,6 +30,6 @@ func Provide() {
 
 		di.SingletonAs[cache.Client](func() cache.Client { return instance })
 	default:
-		panic(fmt.Errorf("invalid 'CACHE_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_CACHE_PROVIDER': %s", provider))
 	}
 }

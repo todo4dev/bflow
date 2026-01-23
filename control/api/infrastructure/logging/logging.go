@@ -11,11 +11,11 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("LOGGING_PROVIDER", "rs_zerolog")
+	provider := env.Get("API_LOGGING_PROVIDER", "rs_zerolog")
 	switch provider {
 	case "rs_zerolog":
 		config := rs_zerolog.Config{
-			Level:       env.Get("LOGGING_LEVEL", "info"),
+			Level:       env.Get("API_LOGGING_LEVEL", "info"),
 			ServiceName: env.Get("API_NAME", "bflow-control"),
 		}
 		if err := config.Validate(); err != nil {
@@ -29,7 +29,7 @@ func Provide() {
 
 		di.SingletonAs[logging.Logger](func() logging.Logger { return instance })
 	default:
-		panic(fmt.Errorf("invalid 'LOGGING_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_LOGGING_PROVIDER': %s", provider))
 	}
 
 }

@@ -13,16 +13,16 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("STORAGE_PROVIDER", "aws_s3")
+	provider := env.Get("API_STORAGE_PROVIDER", "aws_s3")
 	switch provider {
 	case "aws_s3":
 		config := aws_s3.Config{
-			Region:         env.Get("STORAGE_REGION", "us-east-1"),
-			Bucket:         env.Get("STORAGE_BUCKET", ""),
-			AccessKey:      env.Get("STORAGE_ACCESS_KEY", ""),
-			SecretKey:      env.Get("STORAGE_SECRET_KEY", ""),
-			Endpoint:       util.Ptr(env.Get("STORAGE_ENDPOINT", "")),
-			ForcePathStyle: slices.Contains([]string{"true", "1"}, env.Get("STORAGE_FORCE_PATH_STYLE", "false")),
+			Region:         env.Get("API_STORAGE_REGION", "us-east-1"),
+			Bucket:         env.Get("API_STORAGE_BUCKET", ""),
+			AccessKey:      env.Get("API_STORAGE_ACCESS_KEY", ""),
+			SecretKey:      env.Get("API_STORAGE_SECRET_KEY", ""),
+			Endpoint:       util.Ptr(env.Get("API_STORAGE_ENDPOINT", "")),
+			ForcePathStyle: slices.Contains([]string{"true", "1"}, env.Get("API_STORAGE_FORCE_PATH_STYLE", "false")),
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("storage config validation failed: %w", err))
@@ -35,13 +35,6 @@ func Provide() {
 
 		di.SingletonAs[storage.Client](func() storage.Client { return instance })
 	default:
-		panic(fmt.Errorf("invalid 'STORAGE_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_STORAGE_PROVIDER': %s", provider))
 	}
-}
-
-func getEndpointPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }

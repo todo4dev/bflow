@@ -11,21 +11,21 @@ ENV LIQUIBASE_CHANGELOG_FILE=changelog.xml
 FROM base AS runner
 
 ENV \
-  DATABASE_HOST=postgres \
-  DATABASE_PORT=5432 \
-  DATABASE_USERNAME=postgres \
-  #DATABASE_PASSWORD=postgres \
-  DATABASE_DATABASE=postgres \
-  DATABASE_CHANGELOG=_changelog \
-  DATABASE_CHANGELOG_LOCK=_changelog_lock \
+  API_DATABASE_HOST=postgres \
+  API_DATABASE_PORT=5432 \
+  API_DATABASE_USERNAME=postgres \
+  #API_DATABASE_PASSWORD=postgres \
+  API_DATABASE_DATABASE=postgres \
+  API_DATABASE_CHANGELOG=_changelog \
+  API_DATABASE_CHANGELOG_LOCK=_changelog_lock \
   LIQUIBASE_TAG=latest
 
 ENTRYPOINT ["bash", "-c"]
 CMD ["liquibase \
-  --url=jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DATABASE} \
+  --url=jdbc:postgresql://${API_DATABASE_HOST}:${API_DATABASE_PORT}/${API_DATABASE_DATABASE} \
   --changeLogFile=${LIQUIBASE_CHANGELOG_FILE} \
-  --username=${DATABASE_USERNAME} \
-  --password=${DATABASE_PASSWORD} \
-  --databaseChangeLogTableName=${DATABASE_CHANGELOG} \
-  --databaseChangeLogLockTableName=${DATABASE_CHANGELOG_LOCK} \
+  --username=${API_DATABASE_USERNAME} \
+  --password=${API_DATABASE_PASSWORD} \
+  --databaseChangeLogTableName=${API_DATABASE_CHANGELOG} \
+  --databaseChangeLogLockTableName=${API_DATABASE_CHANGELOG_LOCK} \
   updateToTag ${LIQUIBASE_TAG}"]

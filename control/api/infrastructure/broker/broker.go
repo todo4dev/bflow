@@ -12,13 +12,13 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("BROKER_PROVIDER", "segmentio_kafka")
+	provider := env.Get("API_BROKER_PROVIDER", "segmentio_kafka")
 	switch provider {
 	case "segmentio_kafka":
 		config := segmentio_kafka.Config{
-			Brokers:         strings.Split(env.Get("BROKER_URL", "localhost:9092"), ","),
-			TopicPrefix:     env.Get("BROKER_TOPIC_PREFIX", ""),
-			ConsumerGroupID: env.Get("BROKER_CONSUMER_GROUP_ID", ""),
+			Brokers:         strings.Split(env.Get("API_BROKER_URL", "localhost:9092"), ","),
+			TopicPrefix:     env.Get("API_BROKER_TOPIC_PREFIX", ""),
+			ConsumerGroupID: env.Get("API_BROKER_CONSUMER_GROUP_ID", ""),
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("broker config validation failed: %w", err))
@@ -33,6 +33,6 @@ func Provide() {
 	// case "mocking_impl":
 	// case "another_broker_impl":
 	default:
-		panic(fmt.Errorf("invalid 'BROKER_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_BROKER_PROVIDER': %s", provider))
 	}
 }

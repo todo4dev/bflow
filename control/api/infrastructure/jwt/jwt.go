@@ -12,17 +12,17 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("JWT_PROVIDER", "golang_jwt")
+	provider := env.Get("API_JWT_PROVIDER", "golang_jwt")
 	switch provider {
 	case "golang_jwt":
 		config := golang_jwt.Config{
-			Algorithm:  env.Get("JWT_ALGORITHM", "HS256"),
-			Issuer:     env.Get("JWT_ISSUER", "bflow"),
-			Audience:   env.Get("JWT_AUDIENCE", "bflow-api"),
-			PrivateKey: env.Get("JWT_PRIVATE_KEY", "secret-key"),
-			PublicKey:  env.Get("JWT_PUBLIC_KEY", "secret-key"),
-			AccessTTL:  time.Duration(env.Get("JWT_ACCESS_TTL_SECONDS", 900)) * time.Second,
-			RefreshTTL: time.Duration(env.Get("JWT_REFRESH_TTL_SECONDS", 86400)) * time.Second,
+			Algorithm:  env.Get("API_JWT_ALGORITHM", "HS256"),
+			Issuer:     env.Get("API_JWT_ISSUER", "bflow"),
+			Audience:   env.Get("API_JWT_AUDIENCE", "bflow-api"),
+			PrivateKey: env.Get("API_JWT_PRIVATE_KEY", "secret-key"),
+			PublicKey:  env.Get("API_JWT_PUBLIC_KEY", "secret-key"),
+			AccessTTL:  time.Duration(env.Get("API_JWT_ACCESS_TTL_SECONDS", 900)) * time.Second,
+			RefreshTTL: time.Duration(env.Get("API_JWT_REFRESH_TTL_SECONDS", 86400)) * time.Second,
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("jwt config validation failed: %w", err))
@@ -35,6 +35,6 @@ func Provide() {
 
 		di.SingletonAs[jwt.Provider](func() jwt.Provider { return instance })
 	default:
-		panic(fmt.Errorf("invalid 'JWT_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_JWT_PROVIDER': %s", provider))
 	}
 }

@@ -14,11 +14,11 @@ import (
 )
 
 func Provide() {
-	provider := env.Get("DATABASE_PROVIDER", "jackc_pgx")
+	provider := env.Get("API_DATABASE_PROVIDER", "jackc_pgx")
 	switch provider {
 	case "jackc_pgx":
 		config := jackc_pgx.Config{
-			DSN: env.Get("DATABASE_DSN", "postgres://user:pass@localhost:5432/bflow?sslmode=disable"),
+			DSN: env.Get("API_DATABASE_DSN", "postgres://user:pass@localhost:5432/bflow?sslmode=disable"),
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("database config validation failed: %w", err))
@@ -57,6 +57,6 @@ func Provide() {
 		di.SingletonAs[repository.Subscription](impl.NewSubscription)
 		di.SingletonAs[domain.Uow](jackc_pgx.NewUow)
 	default:
-		panic(fmt.Errorf("invalid 'DATABASE_PROVIDER': %s", provider))
+		panic(fmt.Errorf("invalid 'API_DATABASE_PROVIDER': %s", provider))
 	}
 }
