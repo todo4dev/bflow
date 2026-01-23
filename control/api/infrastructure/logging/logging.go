@@ -16,7 +16,7 @@ func Provide() {
 	case "rs_zerolog":
 		config := rs_zerolog.Config{
 			Level:       env.Get("LOGGING_LEVEL", "info"),
-			ServiceName: env.Get("APP_NAME", "bflow-control"),
+			ServiceName: env.Get("API_NAME", "bflow-control"),
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("logging config validation failed: %w", err))

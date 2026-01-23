@@ -224,7 +224,7 @@ services:
                 
                 updated = False
                 for i, line in enumerate(lines):
-                    if line.strip().startswith('APP_TRACE_URL'):
+                    if line.strip().startswith('API_TRACE_URL'):
                         parts = line.split('=', 1)
                         if len(parts) == 2:
                             var_part = parts[0]
@@ -235,10 +235,10 @@ services:
                 if not updated:
                     if lines and not lines[-1].endswith('\n'):
                         lines[-1] += '\n'
-                    lines.append(f'APP_TRACE_URL      = "{new_dsn}"\n')
+                    lines.append(f'API_TRACE_URL      = "{new_dsn}"\n')
                 
                 with open(env_path, 'w') as f:
                     f.writelines(lines)
-                print(f"--- [OK] APP_TRACE_URL atualizado: {new_dsn} ---")
+                print(f"--- [OK] API_TRACE_URL atualizado: {new_dsn} ---")
         PYTHON_EOF
         exec /code/bin/run-all-in-one.sh

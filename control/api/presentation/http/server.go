@@ -36,7 +36,7 @@ func NewServer() *Server {
 	server.app.
 		Use(recover.New()).
 		Use(logger.New(server.logger)).
-		Use(cors.New(env.Get("APP_ORIGIN", "*"))).
+		Use(cors.New(env.Get("API_ORIGIN", "*"))).
 		Use(compress.New()).
 		Use(security.New())
 
@@ -46,8 +46,8 @@ func NewServer() *Server {
 }
 
 func (s *Server) Listen() error {
-	port := env.Get("APP_PORT", "3000")
-	name := env.Get("APP_NAME", "bflow-control")
+	port := env.Get("API_PORT", "3000")
+	name := env.Get("API_NAME", "bflow-control")
 
 	s.logger.Info(context.Background(), fmt.Sprintf("🚀 %s running on port :%s", name, port))
 	return s.router.Listen(":" + port)

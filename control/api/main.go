@@ -19,7 +19,7 @@ import (
 func main() {
 	env.Load(".env", "../.env")
 
-	sentry.Init(sentry.ClientOptions{Dsn: env.Get("APP_TRACE_URL", "")})
+	sentry.Init(sentry.ClientOptions{Dsn: env.Get("API_TRACE_URL", "")})
 	defer sentry.Flush(2 * time.Second)
 
 	infrastructure.Provide()
