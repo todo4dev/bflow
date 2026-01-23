@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"src/domain"
 	"src/domain/entity"
 	"src/domain/issue"
+	"src/domain/repository"
 	"src/port/cache"
 	"src/port/jwt"
 	"src/port/logging"
@@ -40,31 +40,37 @@ type Result struct {
 }
 
 type Handler struct {
-	domainUow     domain.Uow
-	jwtProvider   jwt.Provider
-	cacheClient   cache.Client
-	mailingMailer mailing.Mailer
-	loggingLogger logging.Logger
+	repositoryAccount           repository.Account
+	repositoryAccountCredential repository.AccountCredential
+	repositoryAccountProfile    repository.AccountProfile
+	jwtProvider                 jwt.Provider
+	cacheClient                 cache.Client
+	mailingMailer               mailing.Mailer
+	loggingLogger               logging.Logger
 }
 
 func New(
-	domainUow domain.Uow,
+	repositoryAccount repository.Account,
+	repositoryAccountCredential repository.AccountCredential,
+	repositoryAccountProfile repository.AccountProfile,
 	jwtProvider jwt.Provider,
 	cacheClient cache.Client,
 	mailingMailer mailing.Mailer,
 	loggingLogger logging.Logger,
 ) *Handler {
 	return &Handler{
-		domainUow:     domainUow,
-		jwtProvider:   jwtProvider,
-		cacheClient:   cacheClient,
-		mailingMailer: mailingMailer,
-		loggingLogger: loggingLogger,
+		repositoryAccount:           repositoryAccount,
+		repositoryAccountCredential: repositoryAccountCredential,
+		repositoryAccountProfile:    repositoryAccountProfile,
+		jwtProvider:                 jwtProvider,
+		cacheClient:                 cacheClient,
+		mailingMailer:               mailingMailer,
+		loggingLogger:               loggingLogger,
 	}
 }
 
 func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
-	account, err := h.domainUow.Account().FindByEmail(email)
+	account, err := h.repositoryAccount.FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +84,7 @@ func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
 }
 
 func (h *Handler) findAccountCredentialByAccountId(accountId uuid.UUID) (*entity.AccountCredential, error) {
-	accountCredential, err := h.domainUow.AccountCredential().FindByAccountId(accountId)
+	accountCredential, err := h.repositoryAccountCredential.FindByAccountId(accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +92,14 @@ func (h *Handler) findAccountCredentialByAccountId(accountId uuid.UUID) (*entity
 		return nil, &issue.AccountInvalidCredentials{}
 	}
 	return accountCredential, nil
+}
+
+func (h *Handler) findAccountProfileByAccountId(accountId uuid.UUID) (*entity.AccountProfile, error) {
+	accountProfile, err := h.repositoryAccountProfile.FindByAccountId(accountId)
+	if err != nil {
+		return nil, err
+	}
+	return accountProfile, nil
 }
 
 func (h *Handler) verifyPassword(passwordHash string, password string) error {
@@ -98,9 +112,9 @@ func (h *Handler) verifyPassword(passwordHash string, password string) error {
 
 func (h *Handler) setActivationKey(ctx context.Context, account *entity.Account) (string, error) {
 	otp := uuid.New().String()[:6]
-	key := "account:" + account.ID.String() + ":otp:" + otp + ":activate"
+	key := fmt.Sprintf("account:%s:otp:%s:activate", account.ID.String(), otp)
 
-	err := h.cacheClient.Set(ctx, key, []byte(otp), 15*time.Minute)
+	err := h.cacheClient.Set(ctx, key, "", 15*time.Minute)
 	if err != nil {
 		return "", err
 	}
@@ -111,12 +125,10 @@ func (h *Handler) sendActivationEmail(account *entity.Account, otp string) {
 	go func() {
 		ctx := context.Background()
 		err := h.mailingMailer.Send(ctx, mailing.Email{
-			To:       []string{account.Email},
-			Subject:  "Activate your account",
-			Template: "activate.html",
-			Variables: map[string]any{
-				"Code": otp,
-			},
+			To:        []string{account.Email},
+			Subject:   "Activate your account",
+			Template:  "activate.html",
+			Variables: map[string]any{"otp": otp},
 		})
 		if err != nil {
 			msg := fmt.Sprintf("failed to send activation email to %s", account.Email)
@@ -125,26 +137,17 @@ func (h *Handler) sendActivationEmail(account *entity.Account, otp string) {
 	}()
 }
 
-func (h *Handler) findAccountProfileByAccountId(accountId uuid.UUID) (*entity.AccountProfile, error) {
-	accountProfile, err := h.domainUow.AccountProfile().FindByAccountId(accountId)
-	if err != nil {
-		return nil, err
-	}
-	return accountProfile, nil
-}
-
 func (h *Handler) createAccountSession(ctx context.Context, account *entity.Account) (string, error) {
 	sessionID := uuid.New().String()
-
 	key := fmt.Sprintf("account:%s:session:%s", account.ID.String(), sessionID)
 
-	value := map[string]any{"maxAge": time.Now().Add(h.jwtProvider.GetRefreshTokenTTL())}
-	valueBytes, err := json.Marshal(value)
+	valueMap := map[string]any{"maxAge": time.Now().Add(h.jwtProvider.GetRefreshTokenTTL())}
+	value, err := json.Marshal(valueMap)
 	if err != nil {
 		return "", err
 	}
 
-	if err := h.cacheClient.Set(ctx, key, valueBytes, h.jwtProvider.GetAccessTokenTTL()); err != nil {
+	if err := h.cacheClient.Set(ctx, key, value, h.jwtProvider.GetAccessTokenTTL()); err != nil {
 		return "", err
 	}
 

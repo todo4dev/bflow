@@ -12,8 +12,7 @@ import (
 
 func handler(c *fiber.Ctx) error {
 	config := di.Resolve[*router.Config]()
-	swaggerUIPath := path.Clean(config.BasePath + config.SwaggerPath)
-	swaggerJSONPath := path.Clean(swaggerUIPath + "/openapi.json")
+	swaggerJSONPath := path.Join(config.BasePath, "_system", config.SwaggerPath, "openapi.json")
 
 	html := fmt.Sprintf(`
 		<!DOCTYPE html>

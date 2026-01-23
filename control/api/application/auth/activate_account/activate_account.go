@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"src/domain"
 	"src/domain/entity"
 	"src/domain/event"
 	"src/domain/issue"
+	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
 	"src/port/logging"
@@ -30,23 +30,23 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow       domain.Uow
-	loggingLogger   logging.Logger
-	brokerPublisher broker.Client
-	cacheClient     cache.Client
+	repositoryAccount repository.Account
+	loggingLogger     logging.Logger
+	brokerPublisher   broker.Client
+	cacheClient       cache.Client
 }
 
 func New(
-	domainUow domain.Uow,
+	repositoryAccount repository.Account,
 	cacheClient cache.Client,
 	loggingLogger logging.Logger,
 	brokerPublisher broker.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:       domainUow,
-		cacheClient:     cacheClient,
-		loggingLogger:   loggingLogger,
-		brokerPublisher: brokerPublisher,
+		repositoryAccount: repositoryAccount,
+		cacheClient:       cacheClient,
+		loggingLogger:     loggingLogger,
+		brokerPublisher:   brokerPublisher,
 	}
 }
 
@@ -65,7 +65,7 @@ func (h *Handler) findCachedKeyByOTP(ctx context.Context, otp string) (accountID
 }
 
 func (h *Handler) findAccountById(accountID uuid.UUID) (*entity.Account, error) {
-	account, err := h.domainUow.Account().FindById(accountID)
+	account, err := h.repositoryAccount.FindById(accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (h *Handler) activateAccount(account *entity.Account) error {
 	now := time.Now().UTC()
 	account.TS = now
 	account.EmailVerifiedAt = &now
-	if err := h.domainUow.Account().Save(account); err != nil {
+	if err := h.repositoryAccount.Save(account); err != nil {
 		return err
 	}
 	return nil

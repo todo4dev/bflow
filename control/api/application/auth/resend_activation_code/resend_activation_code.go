@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"src/domain"
 	"src/domain/entity"
 	"src/domain/event"
 	"src/domain/issue"
+	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
 	"src/port/logging"
@@ -28,31 +28,31 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow       domain.Uow
-	mailingMailer   mailing.Mailer
-	loggingLogger   logging.Logger
-	brokerPublisher broker.Client
-	cacheClient     cache.Client
+	repositoryAccount repository.Account
+	mailingMailer     mailing.Mailer
+	loggingLogger     logging.Logger
+	brokerPublisher   broker.Client
+	cacheClient       cache.Client
 }
 
 func New(
-	domainUow domain.Uow,
+	repositoryAccount repository.Account,
 	mailingMailer mailing.Mailer,
 	loggingLogger logging.Logger,
 	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:       domainUow,
-		mailingMailer:   mailingMailer,
-		loggingLogger:   loggingLogger,
-		brokerPublisher: brokerPublisher,
-		cacheClient:     cacheClient,
+		repositoryAccount: repositoryAccount,
+		mailingMailer:     mailingMailer,
+		loggingLogger:     loggingLogger,
+		brokerPublisher:   brokerPublisher,
+		cacheClient:       cacheClient,
 	}
 }
 
 func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
-	account, err := h.domainUow.Account().FindByEmail(email)
+	account, err := h.repositoryAccount.FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}

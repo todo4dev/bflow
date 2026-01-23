@@ -4,7 +4,9 @@ package database
 import (
 	"fmt"
 	"src/domain"
+	"src/domain/repository"
 	"src/infrastructure/database/jackc_pgx"
+	impl "src/infrastructure/database/jackc_pgx/repository"
 	"src/port/database"
 
 	"github.com/leandroluk/gox/di"
@@ -28,6 +30,31 @@ func Provide() {
 		}
 
 		di.SingletonAs[database.Client](func() database.Client { return instance })
+		di.SingletonAs[repository.AccountActivity](impl.NewAccountActivity)
+		di.SingletonAs[repository.AccountCertificate](impl.NewAccountCertificate)
+		di.SingletonAs[repository.AccountCredential](impl.NewAccountCredential)
+		di.SingletonAs[repository.AccountNotification](impl.NewAccountNotification)
+		di.SingletonAs[repository.AccountPreference](impl.NewAccountPreference)
+		di.SingletonAs[repository.AccountProfile](impl.NewAccountProfile)
+		di.SingletonAs[repository.Account](impl.NewAccount)
+		di.SingletonAs[repository.ArtifactRelease](impl.NewArtifactRelease)
+		di.SingletonAs[repository.Artifact](impl.NewArtifact)
+		di.SingletonAs[repository.ClusterAgentEnrollment](impl.NewClusterAgentEnrollment)
+		di.SingletonAs[repository.ClusterAgent](impl.NewClusterAgent)
+		di.SingletonAs[repository.ClusterRuntime](impl.NewClusterRuntime)
+		di.SingletonAs[repository.Cluster](impl.NewCluster)
+		di.SingletonAs[repository.DocumentSignature](impl.NewDocumentSignature)
+		di.SingletonAs[repository.Document](impl.NewDocument)
+		di.SingletonAs[repository.OrganizationInvite](impl.NewOrganizationInvite)
+		di.SingletonAs[repository.OrganizationMembership](impl.NewOrganizationMembership)
+		di.SingletonAs[repository.Organization](impl.NewOrganization)
+		di.SingletonAs[repository.PipelineActionStage](impl.NewPipelineActionStage)
+		di.SingletonAs[repository.PipelineAction](impl.NewPipelineAction)
+		di.SingletonAs[repository.Pipeline](impl.NewPipeline)
+		di.SingletonAs[repository.Plan](impl.NewPlan)
+		di.SingletonAs[repository.SubscriptionInvoice](impl.NewSubscriptionInvoice)
+		di.SingletonAs[repository.SubscriptionPayment](impl.NewSubscriptionPayment)
+		di.SingletonAs[repository.Subscription](impl.NewSubscription)
 		di.SingletonAs[domain.Uow](jackc_pgx.NewUow)
 	default:
 		panic(fmt.Errorf("invalid 'DATABASE_PROVIDER': %s", provider))

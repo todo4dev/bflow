@@ -1,4 +1,4 @@
-// presentation/http/middleware/logger.go
+// presentation/http/middleware/logger/logger.go
 package logger
 
 import (
@@ -11,14 +11,22 @@ import (
 )
 
 type LoggerConfig struct {
-	Logger logging.Logger
-
 	SkipPaths []string
 
 	SkipSuccessStatus bool
 }
 
-func LoggerHandler(config LoggerConfig) fiber.Handler {
+func New(logger logging.Logger, optionalConfig ...LoggerConfig) fiber.Handler {
+	config := LoggerConfig{SkipPaths: []string{"/system/health"}}
+
+	if len(optionalConfig) > 0 {
+		config = optionalConfig[0]
+	}
+
+	return LoggerHandler(logger, config)
+}
+
+func LoggerHandler(logger logging.Logger, config LoggerConfig) fiber.Handler {
 	skipPaths := make(map[string]bool)
 	for _, path := range config.SkipPaths {
 		skipPaths[path] = true
@@ -58,18 +66,18 @@ func LoggerHandler(config LoggerConfig) fiber.Handler {
 
 		if err != nil {
 			fields = append(fields, logging.Error(err))
-			config.Logger.Error(ctx, "HTTP request failed", err, fields...)
+			logger.Error(ctx, "HTTP request failed", err, fields...)
 			return err
 		}
 
 		message := fmt.Sprintf("%s %s", c.Method(), c.Path())
 
 		if status >= 500 {
-			config.Logger.Error(ctx, message, nil, fields...)
+			logger.Error(ctx, message, nil, fields...)
 		} else if status >= 400 {
-			config.Logger.Warn(ctx, message, fields...)
+			logger.Warn(ctx, message, fields...)
 		} else {
-			config.Logger.Info(ctx, message, fields...)
+			logger.Info(ctx, message, fields...)
 		}
 
 		return nil

@@ -3,19 +3,20 @@ package reset_password
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"src/domain"
 	"src/domain/constant"
 	"src/domain/entity"
 	"src/domain/event"
 	"src/domain/issue"
+	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
 	"src/port/logging"
 
 	"github.com/google/uuid"
 	"github.com/leandroluk/gox/meta"
-	"github.com/leandroluk/gox/util"
 	"github.com/leandroluk/gox/validate"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -33,28 +34,32 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow       domain.Uow
-	loggingLogger   logging.Logger
-	brokerPublisher broker.Client
-	cacheClient     cache.Client
+	repositoryAccount           repository.Account
+	repositoryAccountCredential repository.AccountCredential
+	domainUow                   domain.Uow
+	loggingLogger               logging.Logger
+	brokerPublisher             broker.Client
+	cacheClient                 cache.Client
 }
 
 func New(
-	domainUow domain.Uow,
+	repositoryAccount repository.Account,
+	repositoryAccountCredential repository.AccountCredential,
 	loggingLogger logging.Logger,
 	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:       domainUow,
-		loggingLogger:   loggingLogger,
-		brokerPublisher: brokerPublisher,
-		cacheClient:     cacheClient,
+		repositoryAccount:           repositoryAccount,
+		repositoryAccountCredential: repositoryAccountCredential,
+		loggingLogger:               loggingLogger,
+		brokerPublisher:             brokerPublisher,
+		cacheClient:                 cacheClient,
 	}
 }
 
 func (h *Handler) findActiveAccountByEmail(email string) (*entity.Account, error) {
-	account, err := h.domainUow.Account().FindByEmail(email)
+	account, err := h.repositoryAccount.FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}
@@ -83,20 +88,34 @@ func (h *Handler) verifyOTP(ctx context.Context, accountID string, inputOTP stri
 	return nil
 }
 
-func (h *Handler) updatePassword(accountID string, newPassword string) error {
+func (h *Handler) upsertPassword(accountID uuid.UUID, newPassword string) error {
+	accountCredential, err := h.repositoryAccountCredential.FindByAccountId(accountID)
+	if err != nil {
+		return err
+	}
+
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	return h.domainUow.Do(func(t domain.Repository) error {
-		accountCredential := util.Must(t.AccountCredential().FindByAccountId(uuid.MustParse(accountID)))
-		if accountCredential == nil {
-			return &issue.AccountNotFound{}
-		}
+	now := time.Now().UTC()
+	if accountCredential != nil {
+		accountCredential.TS = now
 		accountCredential.PasswordHash = string(passwordHash)
-		return t.AccountCredential().Save(accountCredential)
-	})
+		err = h.repositoryAccountCredential.Save(accountCredential)
+	} else {
+		accountCredential = &entity.AccountCredential{
+			ID:           uuid.Must(uuid.NewV7()),
+			TS:           now,
+			CreatedAt:    now,
+			PasswordHash: string(passwordHash),
+			AccountID:    accountID,
+		}
+		err = h.repositoryAccountCredential.Create(accountCredential)
+	}
+
+	return err
 }
 
 func (h *Handler) publishAccountCredentialChanged(accountID uuid.UUID) {
@@ -125,7 +144,7 @@ func (h *Handler) Handle(ctx context.Context, data *Data) error {
 		return err
 	}
 
-	err = h.updatePassword(account.ID.String(), data.NewPassword)
+	err = h.upsertPassword(account.ID, data.NewPassword)
 	if err != nil {
 		return err
 	}

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"src/domain"
 	"src/domain/entity"
 	"src/domain/issue"
+	"src/domain/repository"
 	"src/port/cache"
 	"src/port/logging"
 	"src/port/mailing"
@@ -26,24 +26,35 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow     domain.Uow
-	mailingMailer mailing.Mailer
-	loggingLogger logging.Logger
-	cacheClient   cache.Client
+	repositoryAccount repository.Account
+	mailingMailer     mailing.Mailer
+	loggingLogger     logging.Logger
+	cacheClient       cache.Client
 }
 
 func New(
-	domainUow domain.Uow,
+	repositoryAccount repository.Account,
 	mailingMailer mailing.Mailer,
 	loggingLogger logging.Logger,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:     domainUow,
-		mailingMailer: mailingMailer,
-		loggingLogger: loggingLogger,
-		cacheClient:   cacheClient,
+		repositoryAccount: repositoryAccount,
+		mailingMailer:     mailingMailer,
+		loggingLogger:     loggingLogger,
+		cacheClient:       cacheClient,
 	}
+}
+
+func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
+	account, err := h.repositoryAccount.FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, &issue.AccountNotFound{}
+	}
+	return account, nil
 }
 
 func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
@@ -68,17 +79,6 @@ func (h *Handler) sendRecoveryEmail(otp string, email string) {
 			h.loggingLogger.Error(ctx, msg, err)
 		}
 	}()
-}
-
-func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
-	account, err := h.domainUow.Account().FindByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-	if account == nil {
-		return nil, &issue.AccountNotFound{}
-	}
-	return account, nil
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) error {

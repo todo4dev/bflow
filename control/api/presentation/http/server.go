@@ -5,12 +5,15 @@ import (
 	"context"
 	"fmt"
 	"src/port/logging"
-	middleware "src/presentation/http/middleware"
-	rest "src/presentation/http/rest"
+	"src/presentation/http/middleware/compress"
+	"src/presentation/http/middleware/cors"
+	"src/presentation/http/middleware/logger"
+	"src/presentation/http/middleware/recover"
+	"src/presentation/http/middleware/security"
+	"src/presentation/http/rest"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/env"
 )
@@ -31,11 +34,11 @@ func NewServer() *Server {
 	}
 
 	server.app.
-		Use(recover.New(recover.Config{EnableStackTrace: true})).
-		Use(middleware.LoggerHandler(middleware.LoggerConfig{
-			Logger:    server.logger,
-			SkipPaths: []string{"/system/health"},
-		}))
+		Use(recover.New()).
+		Use(logger.New(server.logger)).
+		Use(cors.New(env.Get("APP_ORIGIN", "*"))).
+		Use(compress.New()).
+		Use(security.New())
 
 	server.router = router.Wrapper(server.app, rest.Routes)
 

@@ -5,8 +5,9 @@ import (
 	"context"
 	"src/domain"
 	"src/domain/repository"
-	impl "src/infrastructure/database/jackc_pgx/repository"
 	"src/port/database"
+
+	"github.com/leandroluk/gox/di"
 )
 
 type Uow struct {
@@ -40,34 +41,36 @@ type Uow struct {
 
 var _ domain.Uow = (*Uow)(nil)
 
-func NewUow(client database.Client) *Uow {
+func NewUow(
+	client database.Client,
+) *Uow {
 	return &Uow{
 		client:                 client,
-		accountActivity:        impl.NewAccountActivity(client),
-		accountCertificate:     impl.NewAccountCertificate(client),
-		accountCredential:      impl.NewAccountCredential(client),
-		accountNotification:    impl.NewAccountNotification(client),
-		accountPreference:      impl.NewAccountPreference(client),
-		accountProfile:         impl.NewAccountProfile(client),
-		account:                impl.NewAccount(client),
-		artifactRelease:        impl.NewArtifactRelease(client),
-		artifact:               impl.NewArtifact(client),
-		clusterAgentEnrollment: impl.NewClusterAgentEnrollment(client),
-		clusterAgent:           impl.NewClusterAgent(client),
-		clusterRuntime:         impl.NewClusterRuntime(client),
-		cluster:                impl.NewCluster(client),
-		documentSignature:      impl.NewDocumentSignature(client),
-		document:               impl.NewDocument(client),
-		organizationInvite:     impl.NewOrganizationInvite(client),
-		organizationMembership: impl.NewOrganizationMembership(client),
-		organization:           impl.NewOrganization(client),
-		pipelineActionStage:    impl.NewPipelineActionStage(client),
-		pipelineAction:         impl.NewPipelineAction(client),
-		pipeline:               impl.NewPipeline(client),
-		plan:                   impl.NewPlan(client),
-		subscriptionInvoice:    impl.NewSubscriptionInvoice(client),
-		subscriptionPayment:    impl.NewSubscriptionPayment(client),
-		subscription:           impl.NewSubscription(client),
+		accountActivity:        di.Resolve[repository.AccountActivity](),
+		accountCertificate:     di.Resolve[repository.AccountCertificate](),
+		accountCredential:      di.Resolve[repository.AccountCredential](),
+		accountNotification:    di.Resolve[repository.AccountNotification](),
+		accountPreference:      di.Resolve[repository.AccountPreference](),
+		accountProfile:         di.Resolve[repository.AccountProfile](),
+		account:                di.Resolve[repository.Account](),
+		artifactRelease:        di.Resolve[repository.ArtifactRelease](),
+		artifact:               di.Resolve[repository.Artifact](),
+		clusterAgentEnrollment: di.Resolve[repository.ClusterAgentEnrollment](),
+		clusterAgent:           di.Resolve[repository.ClusterAgent](),
+		clusterRuntime:         di.Resolve[repository.ClusterRuntime](),
+		cluster:                di.Resolve[repository.Cluster](),
+		documentSignature:      di.Resolve[repository.DocumentSignature](),
+		document:               di.Resolve[repository.Document](),
+		organizationInvite:     di.Resolve[repository.OrganizationInvite](),
+		organizationMembership: di.Resolve[repository.OrganizationMembership](),
+		organization:           di.Resolve[repository.Organization](),
+		pipelineActionStage:    di.Resolve[repository.PipelineActionStage](),
+		pipelineAction:         di.Resolve[repository.PipelineAction](),
+		pipeline:               di.Resolve[repository.Pipeline](),
+		plan:                   di.Resolve[repository.Plan](),
+		subscriptionInvoice:    di.Resolve[repository.SubscriptionInvoice](),
+		subscriptionPayment:    di.Resolve[repository.SubscriptionPayment](),
+		subscription:           di.Resolve[repository.Subscription](),
 	}
 }
 

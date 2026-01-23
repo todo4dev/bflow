@@ -1,5 +1,5 @@
 // presentation/http/rest/resource.go
-package resource
+package rest
 
 import (
 	"src/presentation/http/rest/auth"

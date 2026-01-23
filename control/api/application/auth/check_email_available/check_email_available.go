@@ -20,22 +20,19 @@ type Data struct {
 }
 
 type Handler struct {
-	accountRepo repository.Account
+	repositoryAccount repository.Account
 }
 
 func New(
-	accountRepo repository.Account,
+	repositoryAccount repository.Account,
 ) *Handler {
 	return &Handler{
-		accountRepo: accountRepo,
+		repositoryAccount: repositoryAccount,
 	}
 }
 
-func (h *Handler) Handle(ctx context.Context, data *Data) error {
-	if _, err := dataSchema.Validate(data); err != nil {
-		return err
-	}
-	exists, err := h.accountRepo.ExistsByEmail(data.Email)
+func (h *Handler) checkEmailInUse(email string) error {
+	exists, err := h.repositoryAccount.ExistsByEmail(email)
 	if err != nil {
 		return err
 	}
@@ -43,6 +40,13 @@ func (h *Handler) Handle(ctx context.Context, data *Data) error {
 		return &issue.AccountEmailInUse{}
 	}
 	return nil
+}
+
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
+	if _, err := dataSchema.Validate(data); err != nil {
+		return err
+	}
+	return h.checkEmailInUse(data.Email)
 }
 
 func init() {
