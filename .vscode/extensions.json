@@ -26,10 +26,13 @@
     "fill-labs.dependi",
     // Integrates ESLint JavaScript into VS Code.
     "dbaeumer.vscode-eslint",
+    // Robot Framework IntelliSense, linting, test execution and debugging, code formatting, refactoring, and many more
+    "d-biehl.robotcode"
   ],
   "unwantedRecommendations": [
     // Code formatter using prettier
     "esbenp.prettier-vscode", // ! use dbaeumer.vscode-eslint
+    // Simple way to run or debug a single (or multiple) tests from context-menu
     "firsttris.vscode-jest-runner" // ! use "vitest.explorer"
   ]
 }
