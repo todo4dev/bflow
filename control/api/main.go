@@ -30,14 +30,7 @@ func main() {
 
 	util.Must(di.Resolve[*healthcheck.Handler]().Handle(ctx))
 
-	server := http.NewServer()
-
-	port := env.Get("APP_PORT", "3000")
-	name := env.Get("APP_NAME", "bflow-control")
-
-	println("🚀", name, "running on port :"+port)
-
-	if err := server.Listen(":" + port); err != nil {
+	if err := http.NewServer().Listen(); err != nil {
 		panic(err)
 	}
 }
