@@ -127,7 +127,7 @@ func (h *Handler) createAccount(email string, password string) (*entity.Account,
 
 func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
 	otp := uuid.New().String()[:6]
-	key := fmt.Sprintf("account:%s:otp:%s", accountID.String(), otp)
+	key := fmt.Sprintf("account:%s:otp:%s:activate", accountID.String(), otp)
 	h.cacheClient.Set(ctx, key, "", 10*time.Minute)
 	return otp, nil
 }

@@ -50,7 +50,7 @@ func New(
 	}
 }
 
-func (h *Handler) findCachedKeyByOTP(ctx context.Context, otp string) (accountID uuid.UUID, key string, err error) {
+func (h *Handler) findOTP(ctx context.Context, otp string) (accountID uuid.UUID, key string, err error) {
 	match := fmt.Sprintf("account:*:otp:%s:activate", otp)
 	key, _, err = h.cacheClient.Get(ctx, match)
 	if err != nil {
@@ -71,6 +71,9 @@ func (h *Handler) findAccountById(accountID uuid.UUID) (*entity.Account, error) 
 	}
 	if account == nil {
 		return nil, &issue.AccountNotFound{}
+	}
+	if account.EmailVerifiedAt != nil {
+		return nil, &issue.AccountAlreadyActivated{}
 	}
 	return account, nil
 }
@@ -108,7 +111,7 @@ func (h *Handler) Handle(ctx context.Context, data *Data) error {
 		return err
 	}
 
-	accountID, key, err := h.findCachedKeyByOTP(ctx, data.OTP)
+	accountID, key, err := h.findOTP(ctx, data.OTP)
 	if err != nil {
 		return err
 	}

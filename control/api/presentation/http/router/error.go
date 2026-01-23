@@ -2,7 +2,9 @@
 package router
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"maps"
 	"net/http"
 	"net/url"
@@ -85,6 +87,7 @@ func ErrorHandler(optionalErrorMap ...*ErrorMap) fiber.ErrorHandler {
 					RequestURI: ctx.OriginalURL(),
 					RemoteAddr: ctx.IP(),
 					Header:     http.Header(ctx.GetReqHeaders()),
+					Body:       io.NopCloser(bytes.NewReader(ctx.Body())),
 				})
 				sentry.CaptureException(err)
 			})

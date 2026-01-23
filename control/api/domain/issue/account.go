@@ -41,3 +41,15 @@ type AccountDeactivated struct{}
 func (e *AccountDeactivated) Error() string {
 	return "Account is deactivated"
 }
+
+type AccountInvalidToken struct{}
+
+func (e *AccountInvalidToken) Error() string {
+	return "Account invalid token"
+}
+
+type AccountSessionExpired struct{}
+
+func (e *AccountSessionExpired) Error() string {
+	return "Account session expired"
+}

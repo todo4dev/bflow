@@ -28,7 +28,7 @@ func NewClient(config *Config) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, value string, ttl time.Duration) error {
 	if ttl == 0 {
 		ttl = c.ttl
 	}

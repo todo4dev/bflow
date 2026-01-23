@@ -1,0 +1,54 @@
+---
+title: Refresh Authorization Token
+description: Refresh the authorization token extending the session expiration
+---
+
+# Refresh Authorization Token
+
+This use case allows a user to refresh their authorization token using a valid refresh token.
+
+## Rules
+
+*   **Session Validation**: The session ID (jti) from the refresh token must exist in the cache.
+*   **Session Expiration**: The session `maxAge` stored in the cache must be greater than the current time.
+*   **Account Status**: The account associated with the session must be active (not deleted).
+*   **Token Rotation**: A new Access Token and Refresh Token (with the same session ID) are generated.
+*   **Session Extension**: The session expiration in the cache is updated based on the new Access Token TTL.
+
+## Request
+
+**Method**: `POST`
+**Path**: `/auth/refresh`
+
+### Body
+
+```json
+{
+  "refresh_token": "string"
+}
+```
+
+## Response
+
+### Success (200 OK)
+
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "string",
+  "refresh_token": "string",
+  "expires_in": 3600
+}
+```
+
+### Errors
+
+#### 400 Bad Request
+
+*   Invalid input format.
+
+#### 401 Unauthorized
+
+*   **Session Expired**: The session was not found or has expired.
+*   **Account Disabled**: The account is deactivated.
+*   **Invalid Token**: The provided refresh token is invalid or malformed.

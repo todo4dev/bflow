@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                      http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet id="seed-john.doe" author="leandroluk@gmail.com">
+    <sql splitStatements="false" endDelimiter=";"><![CDATA[
+      INSERT INTO "account" (
+        "id", 
+        "ts", 
+        "created_at", 
+        "deleted_at", 
+        "email", 
+        "email_verified_at", 
+        "role"
+      ) VALUES (
+        /* id                */ '019bec10-b40b-71ae-8782-b15f696a6f7f'::uuid, 
+        /* ts                */ '2026-01-23 15:16:41.693', 
+        /* created_at        */ '2026-01-23 15:14:36.228', 
+        /* deleted_at        */ NULL, 
+        /* email             */ 'john.doe@email.com', 
+        /* email_verified_at */ '2026-01-23 15:16:41.693', 
+        /* role              */ 'MEMBER'
+      );
+      INSERT INTO "account_credential" (
+        "id", 
+        "ts", 
+        "created_at", 
+        "password_hash", 
+        "account_id"
+      ) VALUES (
+        /* id                */ '019bec10-b40b-71af-be9d-c02ba03a5e55'::uuid, 
+        /* ts                */ '2026-01-23 15:14:36.228', 
+        /* created_at        */ '2026-01-23 15:14:36.228', 
+        /* password_hash     */ '$2a$10$FL6hwT4p.CCZmfSM24jP0OCtZY.ME83mWS/goNBR8.tkn//2rMKJO', 
+        /* account_id        */ '019bec10-b40b-71ae-8782-b15f696a6f7f'::uuid
+      );
+      INSERT INTO "account_profile" (
+        "id", 
+        "ts", 
+        "given_name", 
+        "family_name", 
+        "language", 
+        "timezone", 
+        "account_id"
+      ) VALUES (
+        /* id                         */ '019bec10-b40b-71b0-beff-6889c1ba54ed'::uuid, 
+        /* ts                         */ '2026-01-23 15:14:36.228', 
+        /* given_name                 */ NULL, 
+        /* family_name                */ NULL, 
+        /* language                   */ 'en', 
+        /* timezone                   */ 'UTC', 
+        /* account_id                 */ '019bec10-b40b-71ae-8782-b15f696a6f7f'::uuid
+      );
+      INSERT INTO "account_preference" (
+        "id", 
+        "ts", 
+        "theme", 
+        "notify_on_pipeline_success", 
+        "notify_on_infra_alerts", 
+        "account_id"
+      ) VALUES (
+        /* id                         */ '019bec10-b40b-71b1-a4ff-502e17f06360'::uuid, 
+        /* ts                         */ '2026-01-23 15:14:36.228', 
+        /* theme                      */ 'LIGHT', 
+        /* notify_on_pipeline_success */ true, 
+        /* notify_on_infra_alerts     */ true, 
+        /* account_id                 */ '019bec10-b40b-71ae-8782-b15f696a6f7f'::uuid
+      );
+    ]]></sql>
+    <rollback><sql splitStatements="false" endDelimiter=";"><![CDATA[
+      DROP TABLE "account";
+    ]]></sql></rollback>
+  </changeSet>
+
+  <changeSet id="tag" author="leandroluk@gmail.com">
+    <tagDatabase tag="1769192362085" />
+  </changeSet>
+</databaseChangeLog>

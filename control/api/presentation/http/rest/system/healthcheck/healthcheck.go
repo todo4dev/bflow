@@ -14,7 +14,7 @@ func handler(c *fiber.Ctx) error {
 	usecase := di.Resolve[*healthcheck.Handler]()
 	result, err := usecase.Handle(c.Context())
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusServiceUnavailable).JSON(result)
 	}
 	return c.JSON(result)
 }
@@ -22,7 +22,9 @@ func handler(c *fiber.Ctx) error {
 func operation(o *oas.Operation) {
 	o.Tags("System").Summary("Healthcheck").
 		Description("Checks connectivity status of services")
-	router.ResponseStatus(o, fiber.StatusOK, "Healthcheck status", router.SchemaAs[healthcheck.Result]())
+	resultSchema := router.SchemaAs[healthcheck.Result]()
+	router.ResponseStatus(o, fiber.StatusOK, "Healthy", resultSchema)
+	router.ResponseStatus(o, fiber.StatusServiceUnavailable, "Unhealthy", resultSchema)
 }
 
 var Route = router.

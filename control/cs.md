@@ -1,14 +1,19 @@
+legend:
+- ⛔ not implemented yet
+- ✅ doc generated and implemented
+- ✔️ end to end generated
+
 1.  system
     1.  ✅ healthcheck
 2.  auth
-    1.  ✅ check if email is available
-    2.  ✅ register account using email and password
-    3.  ✅ activate account using email and code
-    4.  ✅ resend activation code for email
-    5.  ✅ send reset password for email
-    6.  ✅ reset password using email, new password and code
-    7.  ✅ login using email and password
-    8.  ⛔ refresh authorization token
+    1.  ✔️ check if email is available
+    2.  ✔️ register account using email and password
+    3.  ✔️ activate account using email and code
+    4.  ✔️ resend activation code for email
+    5.  ✔️ send reset password for email
+    6.  ✔️ reset password using email, new password and code
+    7.  ✔️ login using email and password
+    8.  ✔️ refresh authorization token
 3.  auth/sso
     1.  ⛔ redirect to sso provider passing callback url as state
     2.  ⛔ callback from sso provider callbacking to initial url with internal code

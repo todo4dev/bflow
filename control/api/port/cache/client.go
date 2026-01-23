@@ -9,7 +9,7 @@ import (
 // Client represents a cache storage (Redis)
 type Client interface {
 	// Set stores a value with TTL
-	Set(ctx context.Context, key string, value any, ttl time.Duration) error
+	Set(ctx context.Context, key string, value string, ttl time.Duration) error
 
 	// Get retrieves a value
 	Get(ctx context.Context, match string) (key string, value string, err error)

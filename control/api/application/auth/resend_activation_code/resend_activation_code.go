@@ -65,7 +65,9 @@ func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
 	return account, nil
 }
 
-func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
+func (h *Handler) recreateOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
+	oldKey := fmt.Sprintf("account:%s:otp:*:activate", accountID.String())
+	h.cacheClient.Delete(ctx, oldKey)
 	otp := uuid.New().String()[:6]
 	key := fmt.Sprintf("account:%s:otp:%s:activate", accountID.String(), otp)
 	h.cacheClient.Set(ctx, key, "", 10*time.Minute)
@@ -107,7 +109,7 @@ func (h *Handler) Handle(ctx context.Context, data *Data) error {
 		return err
 	}
 
-	otp, err := h.createOTP(ctx, account.ID)
+	otp, err := h.recreateOTP(ctx, account.ID)
 	if err != nil {
 		return err
 	}

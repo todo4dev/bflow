@@ -142,10 +142,7 @@ func (h *Handler) createAccountSession(ctx context.Context, account *entity.Acco
 	key := fmt.Sprintf("account:%s:session:%s", account.ID.String(), sessionID)
 
 	valueMap := map[string]any{"maxAge": time.Now().Add(h.jwtProvider.GetRefreshTokenTTL())}
-	value, err := json.Marshal(valueMap)
-	if err != nil {
-		return "", err
-	}
+	value := string(util.Must(json.Marshal(valueMap)))
 
 	if err := h.cacheClient.Set(ctx, key, value, h.jwtProvider.GetAccessTokenTTL()); err != nil {
 		return "", err

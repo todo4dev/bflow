@@ -1,60 +1,57 @@
-# Prompt de Implementação de Use Case @[control]
+# Implementation Plan - Refresh Authorization Token
 
-Este prompt define o fluxo de trabalho para implementar novos casos de uso no projeto @[control]. O agente deve seguir rigorosamente as etapas abaixo.
+## User Review Required
 
-## 1. Análise de Contexto
+> [!IMPORTANT]
+> Verify if `src/port/jwt` exposes a method to parse/validate the refresh token and extract claims (jti) without full verification if we rely on cache, or if we should verify signature first. The plan assumes `jwtProvider` has a method to parse/verify.
 
-Antes de iniciar qualquer interação, o agente deve analisar:
+## Proposed Changes
 
-*   **Contexto do Sistema**: @[control/cs.md] - Identificar quais casos de uso estão pendentes (marcados com `⛔`).
-*   **Modelo de Dados**: @[control/er.mermaid] - Compreender as entidades, relacionamentos e atributos envolvidos.
+### Documentation
 
-## 2. Definição do Caso de Uso
+#### [NEW] [refresh-authorization-token.mdx](file:///c:/dev/todo4dev/bflow/control/doc/src/content/use-cases-api/auth/refresh-authorization-token.mdx)
 
-O agente deve solicitar ao usuário qual o próximo caso de uso a ser implementado, caso não tenha sido informado. O usuário deve fornecer:
-*   Contexto (ex: Identity, Billing).
-*   Regra de negócio.
-*   Cenários de sucesso e falha esperados.
+### Application Layer (Auth Domain)
 
-## 3. Inferência de Documentação
+#### [NEW] [refresh_authorization_token.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/refresh_authorization_token/refresh_authorization_token.go)
+- Implement `Handler` struct with dependencies:
+    - `repository.Account` (to check if active)
+    - `jwt.Provider` (to parse and create tokens)
+    - `cache.Client` (to validate and update session)
+- Implement `Data` struct:
+    - `RefreshToken` (string, required)
+- Implement `Result` struct:
+    - `TokenType`
+    - `AccessToken`
+    - `RefreshToken`
+    - `ExpiresIn`
+- Implement `Handle` method:
+    1.  Validate input.
+    2.  Parse `RefreshToken` to get `jti` (session ID). Handle invalid token error.
+    3.  Check cache for `key := fmt.Sprintf("account:%s:session:%s", accountId, jti)`. If missing -> 401.
+    4.  Parse cache value to get `maxAge`. If `maxAge < now` -> delete cache, return 401.
+    5.  Check account status (active). If not -> 401.
+    6.  Generate new JWT pair (Access + Refresh) using same `jti`.
+    7.  Update session in cache with new expiration (Access Token TTL).
+    8.  Return new tokens.
 
-Com base no caso de uso definido, o agente deve **inferir** a documentação da API seguindo o padrão existente em @[control/doc].
+#### [MODIFY] [usecase.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/usecase.go)
+- Register `refresh_authorization_token` handler.
 
-*   **Localização**: `control/doc/src/content/use-cases/api/<domain>/<use-case>.mdx`
-*   **Formato**: MDX com Frontmatter.
-*   **Estrutura Esperada**:
-    *   Título e Descrição.
-    *   Regras e Validações.
-    *   Request (Método, Path, Parâmetros).
-    *   Success Case (Status, Body).
-    *   Error Case (Status, Body com código e mensagem).
+### Presentation Layer (HTTP)
 
-O agente deve apresentar o conteúdo do arquivo `.mdx` proposto ao usuário para aprovação **antes** de criar o arquivo.
+#### [MODIFY] [router.go](file:///c:/dev/todo4dev/bflow/control/api/presentation/http/router/router.go) (or similar)
+- Register `POST /auth/refresh` route mapping to the new handler.
 
-## 4. Implementação na API
+## Verification Plan
 
-Após a aprovação da documentação pelo usuário, o agente deve implementar o caso de uso em @[control/api] seguindo a Clean Architecture.
+### Automated Tests
+- Since I cannot run full integration tests easily without setup, I will rely on manual verification or unit tests if possible.
+- I will attempt to run the server and hit the endpoint with curl.
 
-### Arquivos e Estrutura
-
-1.  **Use Case (Application Layer)**:
-    *   Diretório: `control/api/application/<domain>/usecase/<use_case>/<use_case>.go`
-    *   **Handler** (`<use_case>.go`): Implementar a lógica de negócio, injetando repositórios e devolvendo erros de domínio ou sucesso. A assinatura deve ser `Handle(ctx context.Context, data *Data) (any, error)` e manter também as estruturas de entrada (data) /saida (result).
-    *   **Validação**: Utilizar a biblioteca `github.com/leandroluk/gox/validate` para validar o struct de entrada (`Data`). Definir uma variável `DataSchema` usando `v.Object` e executar a validação no início do método `Handle`.
-    *   Estamos usando injeção de dependência para criar o handler, sendo assim deve-se atualizar o arquivo `control/api/application/<domain>/usecase.go` para que o handler seja registrado.
-
-2.  **Registro da Rota (Presentation Layer)**:
-    *   Diretório: `control/api/presentation/http/` (Verificar `resource` ou `router` para registro).
-    *   Associar o método HTTP e URL ao Handler criado.
-    *   fazer a implementação usando resolução via `di.Resolve[T]()`
-
-## Exemplo de Fluxo
-
-1.  **Agente**: "Analisei o `cs.md`. Qual caso de uso deseja implementar? Ex: `register account`."
-2.  **Usuário**: "Quero fazer o register account. Recebe email/senha, cria conta, retorna 201."
-3.  **Agente**: "Proponho a seguinte documentação em `doc/src/content/use-cases/api/identity/register-account.mdx`: [Conteúdo MDX]. Aprova?"
-4.  **Usuário**: "Sim."
-5.  **Agente**: "Implementando `application/identity/usecase/register_account/register_account.go` e registrando rota..."
-
----
-**Nota**: Mantenha a consistência com os padrões de código (Go para backend, Typescript/MDX para docs) e nomenclaturas existentes no projeto e não esqueça de escrever código, comentários e documentação em inglês.
+### Manual Verification
+1.  **Login**: Call `POST /auth/login` to get `access_token` and `refresh_token`.
+2.  **Refresh Success**: Call `POST /auth/refresh` with the valid `refresh_token`. Expect 200 and new tokens.
+3.  **Refresh Invalid**: Call with invalid string. Expect 401 or 400.
+4.  **Refresh Expired**: (Hard to simulate without waiting or mocking time/cache).
+5.  **Account Disabled**: (Requires modifying DB, might skip for quick check).

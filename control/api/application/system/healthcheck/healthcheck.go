@@ -70,7 +70,7 @@ func (u *Handler) Handle(ctx context.Context) (*Result, error) {
 				message.WriteString(err.Error() + "\n")
 			}
 		}
-		return nil, errors.New(message.String())
+		return &result, errors.New(message.String())
 	}
 	return &result, nil
 }

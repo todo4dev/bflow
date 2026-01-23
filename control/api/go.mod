@@ -12,12 +12,12 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/leandroluk/gox/di v0.7.15
-	github.com/leandroluk/gox/env v0.7.15
-	github.com/leandroluk/gox/meta v0.7.15
-	github.com/leandroluk/gox/oas v0.7.15
-	github.com/leandroluk/gox/util v0.7.15
-	github.com/leandroluk/gox/validate v0.7.15
+	github.com/leandroluk/gox/di v0.7.17
+	github.com/leandroluk/gox/env v0.7.17
+	github.com/leandroluk/gox/meta v0.7.17
+	github.com/leandroluk/gox/oas v0.7.17
+	github.com/leandroluk/gox/util v0.7.17
+	github.com/leandroluk/gox/validate v0.7.17
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/rs/zerolog v1.34.0
 	github.com/segmentio/kafka-go v0.4.50

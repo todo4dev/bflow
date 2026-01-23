@@ -34,7 +34,10 @@
     "**/Thumbs.db": true,
     ".terraform": true,
     ".terraform.*": true,
-    "terraform.tfstate.*": true
+    "terraform.tfstate.*": true,
+    "**/__pycache__": true,
+    "**/uv.lock": true,
+    "**/go.sum": true
   },
   // #endregion
   // #region docker
@@ -119,5 +122,17 @@
       120
     ],
   },
+  // #endregion
+  // #region robot
+  "robotcode.robot.outputDir": "${workspaceFolder}/.robot/results",
+  "[robotframework]": {
+    "editor.wordBasedSuggestions": "off",
+    "editor.semanticHighlighting.enabled": true,
+    "editor.inlayHints.enabled": "offUnlessPressed",
+    "editor.quickSuggestions": {
+      "strings": "on"
+    },
+    "editor.tabSize": 4
+  }
   // #endregion
 }

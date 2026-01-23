@@ -15,12 +15,12 @@ func Provide() {
 	switch provider {
 	case "wneessen_go_mail":
 		config := wneessen_go_mail.Config{
-			Host:         env.Get("API_MAILING_HOST", "localhost"),
-			Port:         env.Get("API_MAILING_PORT", 587),
-			Username:     env.Get("API_MAILING_USERNAME", ""),
-			Password:     env.Get("API_MAILING_PASSWORD", ""),
-			FromAddress:  env.Get("API_MAILING_FROM", "noreply@bflow.dev"),
-			TemplatePath: env.Get("API_MAILING_TEMPLATE_PATH", "./template"),
+			Host:         env.Get("API_MAILING_SMTP_HOST", "localhost"),
+			Port:         env.Get("API_MAILING_SMTP_PORT", 587),
+			Username:     env.Get("API_MAILING_SMTP_USERNAME", ""),
+			Password:     env.Get("API_MAILING_SMTP_PASSWORD", ""),
+			FromAddress:  env.Get("API_MAILING_SMTP_FROM", "noreply@bflow.dev"),
+			TemplatePath: env.Get("API_MAILING_SMTP_TEMPLATE_PATH", "./template"),
 		}
 		if err := config.Validate(); err != nil {
 			panic(fmt.Errorf("mailer config validation failed: %w", err))
