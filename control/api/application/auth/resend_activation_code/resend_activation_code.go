@@ -28,26 +28,26 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow              domain.Uow
-	mailingMailer          mailing.Mailer
-	loggingLogger          logging.Logger
-	brokerPublisherAccount broker.Publisher[event.Account]
-	cacheClient            cache.Client
+	domainUow       domain.Uow
+	mailingMailer   mailing.Mailer
+	loggingLogger   logging.Logger
+	brokerPublisher broker.Client
+	cacheClient     cache.Client
 }
 
 func New(
 	domainUow domain.Uow,
 	mailingMailer mailing.Mailer,
 	loggingLogger logging.Logger,
-	brokerPublisherAccount broker.Publisher[event.Account],
+	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:              domainUow,
-		mailingMailer:          mailingMailer,
-		loggingLogger:          loggingLogger,
-		brokerPublisherAccount: brokerPublisherAccount,
-		cacheClient:            cacheClient,
+		domainUow:       domainUow,
+		mailingMailer:   mailingMailer,
+		loggingLogger:   loggingLogger,
+		brokerPublisher: brokerPublisher,
+		cacheClient:     cacheClient,
 	}
 }
 
@@ -67,46 +67,61 @@ func (h *Handler) findAccountByEmail(email string) (*entity.Account, error) {
 
 func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, error) {
 	otp := uuid.New().String()[:6]
-	key := fmt.Sprintf("account:%s:otp:%s", accountID.String(), otp)
+	key := fmt.Sprintf("account:%s:otp:%s:activate", accountID.String(), otp)
 	h.cacheClient.Set(ctx, key, "", 10*time.Minute)
 	return otp, nil
 }
 
-func (h *Handler) sendActivationEmail(ctx context.Context, otp string, email string) error {
-	return h.mailingMailer.Send(ctx, mailing.Email{
-		To:        []string{email},
-		Subject:   "Activate your account",
-		Template:  "activate.html",
-		Variables: map[string]any{"otp": otp},
-	})
+func (h *Handler) sendActivationEmail(otp string, email string) {
+	go func() {
+		ctx := context.Background()
+		err := h.mailingMailer.Send(ctx, mailing.Email{
+			To:        []string{email},
+			Subject:   "Activate your account",
+			Template:  "activate.html",
+			Variables: map[string]any{"otp": otp}})
+		if err != nil {
+			msg := fmt.Sprintf("failed to send activation email to %s", email)
+			h.loggingLogger.Error(ctx, msg, err)
+		}
+	}()
 }
 
-func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
+func (h *Handler) publishAccountActivated(accountID uuid.UUID) {
+	go func() {
+		event := event.AccountActivated(accountID)
+		if err := h.brokerPublisher.Publish(context.Background(), event); err != nil {
+			msg := fmt.Sprintf("failed to publish AccountActivated event to %s", accountID.String())
+			h.loggingLogger.Error(context.Background(), msg, err)
+		}
+	}()
+}
+
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
 	if _, err := dataSchema.Validate(*data); err != nil {
-		return nil, err
+		return err
 	}
 
 	account, err := h.findAccountByEmail(data.Email)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	otp, err := h.createOTP(ctx, account.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := h.sendActivationEmail(ctx, otp, data.Email); err != nil {
-		h.loggingLogger.Error(ctx, "failed to send email", err)
-	}
+	h.sendActivationEmail(otp, data.Email)
 
-	return nil, nil
+	h.publishAccountActivated(account.ID)
+
+	return nil
 }
 
 func init() {
 	data := Data{
-		Email: "john.doe@email.com",
-	}
+		Email: "john.doe@email.com"}
 	meta.Describe(&data, meta.Description("Resend activation code Data"),
 		meta.Field(&data.Email, meta.Description("Account email")),
 		meta.Example(data))

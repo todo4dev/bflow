@@ -3,7 +3,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"src/domain/entity"
 	"src/domain/repository"
@@ -24,16 +23,13 @@ func NewClusterRuntime(client database.Client) *ClusterRuntime {
 var _ repository.ClusterRuntime = (*ClusterRuntime)(nil)
 
 func (r *ClusterRuntime) Create(t *entity.ClusterRuntime) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		INSERT INTO "cluster_runtime" (
 			"id", "ts", "created_at", "deleted_at", "state", "readonly", "last_deployed_at",
 			"config", "current_artifact_release_id", "cluster_id"
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.CreatedAt, t.DeletedAt, t.State, t.ReadOnly, t.LastDeployedAt,
 		t.Config, t.CurrentArtifactReleaseID, t.ClusterID,
 	)
@@ -41,16 +37,13 @@ func (r *ClusterRuntime) Create(t *entity.ClusterRuntime) error {
 }
 
 func (r *ClusterRuntime) Save(t *entity.ClusterRuntime) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "cluster_runtime" SET
 			"ts" = $2, "deleted_at" = $3, "state" = $4, "readonly" = $5, "last_deployed_at" = $6,
 			"config" = $7, "current_artifact_release_id" = $8
 		WHERE "id" = $1
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.DeletedAt, t.State, t.ReadOnly, t.LastDeployedAt,
 		t.Config, t.CurrentArtifactReleaseID,
 	)
@@ -58,18 +51,12 @@ func (r *ClusterRuntime) Save(t *entity.ClusterRuntime) error {
 }
 
 func (r *ClusterRuntime) Delete(id uuid.UUID) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `DELETE FROM "cluster_runtime" WHERE "id" = $1`
-	_, err := r.client.Exec(ctx, query, id)
+	_, err := r.client.Exec(context.Background(), query, id)
 	return err
 }
 
 func (r *ClusterRuntime) FindById(id uuid.UUID) (*entity.ClusterRuntime, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "state", "readonly", "last_deployed_at",
@@ -78,7 +65,7 @@ func (r *ClusterRuntime) FindById(id uuid.UUID) (*entity.ClusterRuntime, error) 
 		WHERE "id" = $1
 	`
 	var t entity.ClusterRuntime
-	if err := r.client.QueryRow(ctx, query, id).Scan(
+	if err := r.client.QueryRow(context.Background(), query, id).Scan(
 		&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.State, &t.ReadOnly, &t.LastDeployedAt,
 		&t.Config, &t.CurrentArtifactReleaseID, &t.ClusterID,
 	); err != nil {
@@ -91,9 +78,6 @@ func (r *ClusterRuntime) FindById(id uuid.UUID) (*entity.ClusterRuntime, error) 
 }
 
 func (r *ClusterRuntime) FindByClusterId(clusterId uuid.UUID) ([]*entity.ClusterRuntime, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "state", "readonly", "last_deployed_at",
@@ -101,7 +85,7 @@ func (r *ClusterRuntime) FindByClusterId(clusterId uuid.UUID) ([]*entity.Cluster
 		FROM "cluster_runtime"
 		WHERE "cluster_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, clusterId)
+	rows, err := r.client.Query(context.Background(), query, clusterId)
 	if err != nil {
 		return nil, err
 	}

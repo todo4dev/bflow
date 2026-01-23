@@ -3,7 +3,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"src/domain/entity"
 	"src/domain/repository"
@@ -24,16 +23,13 @@ func NewPipelineAction(client database.Client) *PipelineAction {
 var _ repository.PipelineAction = (*PipelineAction)(nil)
 
 func (r *PipelineAction) Create(t *entity.PipelineAction) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		INSERT INTO "pipeline_action" (
 			"id", "ts", "created_at", "deleted_at", "kind", "status",
 			"started_at", "finished_at", "error_message", "pipeline_id", "execution_cluster_agent_id"
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.CreatedAt, t.DeletedAt, t.Kind, t.Status,
 		t.StartedAt, t.FinishedAt, t.ErrorMessage, t.PipelineID, t.ExecutionClusterAgentID,
 	)
@@ -41,25 +37,19 @@ func (r *PipelineAction) Create(t *entity.PipelineAction) error {
 }
 
 func (r *PipelineAction) Save(t *entity.PipelineAction) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "pipeline_action" SET
 			"ts" = $2, "deleted_at" = $3, "status" = $4, "started_at" = $5,
 			"finished_at" = $6, "error_message" = $7
 		WHERE "id" = $1
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.DeletedAt, t.Status, t.StartedAt, t.FinishedAt, t.ErrorMessage,
 	)
 	return err
 }
 
 func (r *PipelineAction) FindById(id uuid.UUID) (*entity.PipelineAction, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "kind", "status",
@@ -68,7 +58,7 @@ func (r *PipelineAction) FindById(id uuid.UUID) (*entity.PipelineAction, error) 
 		WHERE "id" = $1
 	`
 	var t entity.PipelineAction
-	if err := r.client.QueryRow(ctx, query, id).Scan(
+	if err := r.client.QueryRow(context.Background(), query, id).Scan(
 		&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.Kind, &t.Status,
 		&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.PipelineID, &t.ExecutionClusterAgentID,
 	); err != nil {
@@ -81,9 +71,6 @@ func (r *PipelineAction) FindById(id uuid.UUID) (*entity.PipelineAction, error) 
 }
 
 func (r *PipelineAction) FindByPipelineId(pipelineId uuid.UUID) ([]*entity.PipelineAction, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "kind", "status",
@@ -91,7 +78,7 @@ func (r *PipelineAction) FindByPipelineId(pipelineId uuid.UUID) ([]*entity.Pipel
 		FROM "pipeline_action"
 		WHERE "pipeline_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, pipelineId)
+	rows, err := r.client.Query(context.Background(), query, pipelineId)
 	if err != nil {
 		return nil, err
 	}

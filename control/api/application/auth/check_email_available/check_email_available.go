@@ -31,19 +31,18 @@ func New(
 	}
 }
 
-func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
-	_, err := dataSchema.Validate(data)
-	if err != nil {
-		return nil, err
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
+	if _, err := dataSchema.Validate(data); err != nil {
+		return err
 	}
 	exists, err := h.accountRepo.ExistsByEmail(data.Email)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if exists {
-		return nil, &issue.AccountEmailInUse{}
+		return &issue.AccountEmailInUse{}
 	}
-	return nil, nil
+	return nil
 }
 
 func init() {

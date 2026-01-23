@@ -2,7 +2,7 @@
 package http
 
 import (
-	"src/presentation/http/resource"
+	rest "src/presentation/http/rest"
 	"src/presentation/http/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,7 +21,7 @@ func NewServer() *Server {
 	})
 	a.Use(recover.New(recover.Config{EnableStackTrace: true}))
 
-	r := router.Wrapper(a, resource.Routes)
+	r := router.Wrapper(a, rest.Routes)
 
 	return &Server{app: a, router: r}
 }

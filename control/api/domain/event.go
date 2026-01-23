@@ -10,15 +10,15 @@ import (
 	"github.com/leandroluk/gox/util"
 )
 
-type Event[TKind ~string] struct {
-	Kind           TKind     `json:"kind"`
+type Event struct {
+	Kind           string    `json:"kind"`
 	IdempotencyKey string    `json:"idempotency_key"`
 	OccurredAt     time.Time `json:"occurred_at"`
 	Payload        any       `json:"payload"`
 }
 
-func NewEvent[TKind ~string](kind TKind, payload any, optionalIdempotencyKey ...string) Event[TKind] {
-	event := Event[TKind]{
+func NewEvent(kind string, payload any, optionalIdempotencyKey ...string) Event {
+	event := Event{
 		Kind:       kind,
 		OccurredAt: time.Now(),
 		Payload:    payload,
@@ -33,20 +33,20 @@ func NewEvent[TKind ~string](kind TKind, payload any, optionalIdempotencyKey ...
 
 type DecoderFunc func(payload any) (any, error)
 
-type EventMapper[TKind ~string] struct {
-	decoders map[TKind]DecoderFunc
+type EventMapper struct {
+	decoders map[string]DecoderFunc
 }
 
-func NewEventMapper[TKind ~string]() *EventMapper[TKind] {
-	return &EventMapper[TKind]{decoders: map[TKind]DecoderFunc{}}
+func NewEventMapper() *EventMapper {
+	return &EventMapper{decoders: map[string]DecoderFunc{}}
 }
 
-func (m *EventMapper[TKind]) Decoder(kind TKind, decoder DecoderFunc) *EventMapper[TKind] {
+func (m *EventMapper) Decoder(kind string, decoder DecoderFunc) *EventMapper {
 	m.decoders[kind] = decoder
 	return m
 }
 
-func (m *EventMapper[TKind]) Decode(e Event[TKind]) (any, error) {
+func (m *EventMapper) Decode(e Event) (any, error) {
 	decoder, ok := m.decoders[e.Kind]
 	if !ok {
 		return nil, errors.New("unmapped event kind")
@@ -76,4 +76,3 @@ func JSONDecoder[TPayload any]() DecoderFunc {
 		return out, nil
 	}
 }
-

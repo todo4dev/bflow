@@ -38,7 +38,7 @@ type Handler struct {
 	domainUow              domain.Uow
 	mailingMailer          mailing.Mailer
 	loggingLogger          logging.Logger
-	brokerPublisherAccount broker.Publisher[event.Account]
+	brokerPublisherAccount broker.Client
 	cacheClient            cache.Client
 }
 
@@ -46,7 +46,7 @@ func New(
 	domainUow domain.Uow,
 	mailingMailer mailing.Mailer,
 	loggingLogger logging.Logger,
-	brokerPublisher broker.Publisher[event.Account],
+	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
@@ -83,15 +83,13 @@ func (h *Handler) createAccount(email string, password string) (*entity.Account,
 		DeletedAt:       nil,
 		Email:           email,
 		EmailVerifiedAt: nil,
-		Role:            enum.AccountRole_MEMBER,
-	}
+		Role:            enum.AccountRole_MEMBER}
 	credential := entity.AccountCredential{
 		ID:           util.Must(uuid.NewV7()),
 		TS:           now,
 		CreatedAt:    now,
 		PasswordHash: string(passwordHash),
-		AccountID:    account.ID,
-	}
+		AccountID:    account.ID}
 	profile := entity.AccountProfile{
 		ID:         util.Must(uuid.NewV7()),
 		TS:         now,
@@ -99,16 +97,14 @@ func (h *Handler) createAccount(email string, password string) (*entity.Account,
 		FamilyName: nil,
 		Language:   constant.ACCOUNT_PROFILE_LANGUAGE_DEFAULT,
 		Timezone:   constant.ACCOUNT_PROFILE_TIMEZONE_DEFAULT,
-		AccountID:  account.ID,
-	}
+		AccountID:  account.ID}
 	preference := entity.AccountPreference{
 		ID:                      util.Must(uuid.NewV7()),
 		TS:                      now,
 		Theme:                   constant.ACCOUNT_PREFERENCE_THEME_DEFAULT,
 		NotifyOnPipelineSuccess: true,
 		NotifyOnInfraAlerts:     true,
-		AccountID:               account.ID,
-	}
+		AccountID:               account.ID}
 
 	err = h.domainUow.Do(func(t domain.Repository) error {
 		if err := t.Account().Create(&account); err != nil {
@@ -136,45 +132,62 @@ func (h *Handler) createOTP(ctx context.Context, accountID uuid.UUID) (string, e
 	return otp, nil
 }
 
-func (h *Handler) sendActivationEmail(ctx context.Context, otp string, email string) error {
-	return h.mailingMailer.Send(ctx, mailing.Email{
-		To:        []string{email},
-		Subject:   "Activate your account",
-		Template:  "activate.html",
-		Variables: map[string]any{"otp": otp},
-	})
+func (h *Handler) sendActivationEmail(otp string, email string) {
+	go func() {
+		ctx := context.Background()
+		err := h.mailingMailer.Send(ctx, mailing.Email{
+			To:        []string{email},
+			Subject:   "Activate your account",
+			Template:  "activate.html",
+			Variables: map[string]any{"otp": otp}})
+		if err != nil {
+			msg := fmt.Sprintf("failed to send activation email to %s", email)
+			h.loggingLogger.Error(ctx, msg, err)
+		}
+	}()
 }
 
-func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
+func (h *Handler) publishAccountRegistered(email string) {
+	go func() {
+		ctx := context.Background()
+		event := event.AccountRegistered(email)
+		if err := h.brokerPublisherAccount.Publish(ctx, event); err != nil {
+			msg := fmt.Sprintf("failed to publish AccountRegistered event to %s", email)
+			h.loggingLogger.Error(ctx, msg, err)
+		}
+	}()
+}
+
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
 	if _, err := dataSchema.Validate(*data); err != nil {
-		return nil, err
+		return err
 	}
+
 	if err := h.checkEmailInUse(data.Email); err != nil {
-		return nil, err
+		return err
 	}
+
 	account, err := h.createAccount(data.Email, data.Password)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
 	otp, err := h.createOTP(ctx, account.ID)
 	if err != nil {
-		return nil, err
-	}
-	if err := h.sendActivationEmail(ctx, otp, data.Email); err != nil {
-		h.loggingLogger.Error(ctx, "failed to send email", err)
+		return err
 	}
 
-	if err := h.brokerPublisherAccount.Publish(ctx, event.AccountRegistered(data.Email)); err != nil {
-		h.loggingLogger.Error(ctx, "failed to publish message", err)
-	}
+	h.sendActivationEmail(otp, data.Email)
 
-	return nil, nil
+	h.publishAccountRegistered(data.Email)
+
+	return nil
 }
 
 func init() {
 	data := Data{
 		Email:    "john.doe@email.com",
-		Password: "Password123!"}
+		Password: "Test@123"}
 	meta.Describe(&data, meta.Description("Data for registering a new account"),
 		meta.Field(&data.Email, meta.Description("Email address to create the account")),
 		meta.Field(&data.Password, meta.Description("Account password")),

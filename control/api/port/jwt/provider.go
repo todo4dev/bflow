@@ -17,9 +17,7 @@ type Claims struct {
 	Email      string
 	GivenName  *string
 	FamilyName *string
-	Picture    *string
 	Language   *string
-	Theme      *string
 	Timezone   *string
 }
 
@@ -47,4 +45,10 @@ type Provider interface {
 
 	// Decode decodes a JWT token
 	Decode(token string) (*Decoded, error)
+
+	// GetAccessTokenTTL returns the access token TTL
+	GetAccessTokenTTL() time.Duration
+
+	// GetRefreshTokenTTL returns the refresh token TTL
+	GetRefreshTokenTTL() time.Duration
 }

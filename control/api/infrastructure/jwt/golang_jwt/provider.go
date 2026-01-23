@@ -76,9 +76,7 @@ func (p *Provider) createToken(
 		Email:      claims.Email,
 		GivenName:  claims.GivenName,
 		FamilyName: claims.FamilyName,
-		Picture:    claims.Picture,
 		Language:   claims.Language,
-		Theme:      claims.Theme,
 		Timezone:   claims.Timezone,
 	}
 
@@ -149,12 +147,18 @@ func (p *Provider) Decode(
 			Email:      claims.Email,
 			GivenName:  claims.GivenName,
 			FamilyName: claims.FamilyName,
-			Picture:    claims.Picture,
 			Language:   claims.Language,
-			Theme:      claims.Theme,
 			Timezone:   claims.Timezone,
 		},
 		IssuedAt:  claims.IssuedAt.Time,
 		ExpiresAt: claims.ExpiresAt.Time,
 	}, nil
+}
+
+func (p *Provider) GetAccessTokenTTL() time.Duration {
+	return p.accessTTL
+}
+
+func (p *Provider) GetRefreshTokenTTL() time.Duration {
+	return p.refreshTTL
 }

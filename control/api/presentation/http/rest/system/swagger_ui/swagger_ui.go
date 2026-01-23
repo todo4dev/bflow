@@ -1,4 +1,4 @@
-// presentation/http/resource/system/swagger_ui/route.go
+// presentation/http/rest/system/swagger_ui/route.go
 package swagger_ui
 
 import (

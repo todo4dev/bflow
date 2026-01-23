@@ -24,13 +24,12 @@ func Provide() {
 			panic(fmt.Errorf("broker config validation failed: %w", err))
 		}
 
-		instance, err := segmentio_kafka.NewClient[string](&config)
+		instance, err := segmentio_kafka.NewClient(&config)
 		if err != nil {
 			panic(fmt.Errorf("failed to create broker client: %w", err))
 		}
 
-		di.SingletonGeneric[broker.Client[string]](instance)
-
+		di.SingletonAs[broker.Client](func() broker.Client { return instance })
 	// case "mocking_impl":
 	// case "another_broker_impl":
 	default:

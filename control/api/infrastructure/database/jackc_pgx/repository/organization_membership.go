@@ -3,7 +3,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"src/domain/entity"
 	"src/domain/repository"
@@ -24,48 +23,37 @@ func NewOrganizationMembership(client database.Client) *OrganizationMembership {
 var _ repository.OrganizationMembership = (*OrganizationMembership)(nil)
 
 func (r *OrganizationMembership) Create(t *entity.OrganizationMembership) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	query := `
 		INSERT INTO "organization_membership" (
 			"id", "ts", "created_at", "role", "account_id", "organization_id"
 		) VALUES ($1, $2, $3, $4, $5, $6)
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.CreatedAt, t.Role, t.AccountID, t.OrganizationID,
 	)
 	return err
 }
 
 func (r *OrganizationMembership) Save(t *entity.OrganizationMembership) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "organization_membership" SET
 			"ts" = $2, "role" = $3
 		WHERE "id" = $1
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.Role,
 	)
 	return err
 }
 
 func (r *OrganizationMembership) Delete(id uuid.UUID) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `DELETE FROM "organization_membership" WHERE "id" = $1`
-	_, err := r.client.Exec(ctx, query, id)
+	_, err := r.client.Exec(context.Background(), query, id)
 	return err
 }
 
 func (r *OrganizationMembership) FindById(id uuid.UUID) (*entity.OrganizationMembership, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "role", "account_id", "organization_id"
@@ -73,7 +61,7 @@ func (r *OrganizationMembership) FindById(id uuid.UUID) (*entity.OrganizationMem
 		WHERE "id" = $1
 	`
 	var t entity.OrganizationMembership
-	if err := r.client.QueryRow(ctx, query, id).Scan(
+	if err := r.client.QueryRow(context.Background(), query, id).Scan(
 		&t.ID, &t.TS, &t.CreatedAt, &t.Role, &t.AccountID, &t.OrganizationID,
 	); err != nil {
 		if err == pgx.ErrNoRows {
@@ -85,16 +73,13 @@ func (r *OrganizationMembership) FindById(id uuid.UUID) (*entity.OrganizationMem
 }
 
 func (r *OrganizationMembership) FindByAccountId(accountId uuid.UUID) ([]*entity.OrganizationMembership, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "role", "account_id", "organization_id"
 		FROM "organization_membership"
 		WHERE "account_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, accountId)
+	rows, err := r.client.Query(context.Background(), query, accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -114,16 +99,13 @@ func (r *OrganizationMembership) FindByAccountId(accountId uuid.UUID) ([]*entity
 }
 
 func (r *OrganizationMembership) FindByOrganizationId(organizationId uuid.UUID) ([]*entity.OrganizationMembership, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "role", "account_id", "organization_id"
 		FROM "organization_membership"
 		WHERE "organization_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, organizationId)
+	rows, err := r.client.Query(context.Background(), query, organizationId)
 	if err != nil {
 		return nil, err
 	}

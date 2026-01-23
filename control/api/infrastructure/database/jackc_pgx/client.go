@@ -18,12 +18,13 @@ type Client struct {
 var _ sqldb.Client = (*Client)(nil)
 
 func NewClient(config *Config) (*Client, error) {
-	pool, err := pgxpool.New(context.Background(), config.DSN)
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, config.DSN)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := pool.Ping(context.Background()); err != nil {
+	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, err
 	}

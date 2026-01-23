@@ -32,17 +32,17 @@ type Handler struct {
 }
 
 func New(
-	database database.Client,
-	cache cache.Client,
-	broker broker.Client[string],
-	storage storage.Client,
+	databaseClient database.Client,
+	cacheClient cache.Client,
+	brokerClient broker.Client,
+	storageClient storage.Client,
 ) *Handler {
 	return &Handler{
 		services: map[string]pinger{
-			"database": database,
-			"cache":    cache,
-			"broker":   broker,
-			"storage":  storage,
+			"broker":   brokerClient,
+			"cache":    cacheClient,
+			"database": databaseClient,
+			"storage":  storageClient,
 		},
 	}
 }

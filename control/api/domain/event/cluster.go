@@ -7,18 +7,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type Cluster string
-
 const (
-	Cluster_CREATED         Cluster = "cluster.created"
-	Cluster_PROMOTED        Cluster = "cluster.promoted"
-	Cluster_MIGRATED        Cluster = "cluster.migrated"
-	Cluster_DELETED         Cluster = "cluster.deleted"
-	ClusterAgent_REGISTERED Cluster = "cluster.agent_registered"
-	ClusterAgent_HEARTBEAT  Cluster = "cluster.agent_heartbeat"
-	ClusterRuntime_DEPLOYED Cluster = "cluster.runtime_deployed"
-	ClusterRuntime_UPDATED  Cluster = "cluster.runtime_updated"
-	ClusterRuntime_DELETED  Cluster = "cluster.runtime_deleted"
+	Cluster_CREATED         = "cluster.created"
+	Cluster_PROMOTED        = "cluster.promoted"
+	Cluster_MIGRATED        = "cluster.migrated"
+	Cluster_DELETED         = "cluster.deleted"
+	ClusterAgent_REGISTERED = "cluster.agent_registered"
+	ClusterAgent_HEARTBEAT  = "cluster.agent_heartbeat"
+	ClusterRuntime_DEPLOYED = "cluster.runtime_deployed"
+	ClusterRuntime_UPDATED  = "cluster.runtime_updated"
+	ClusterRuntime_DELETED  = "cluster.runtime_deleted"
 )
 
 type ClusterCreatedPayload struct {
@@ -28,65 +26,43 @@ type ClusterCreatedPayload struct {
 	Namespace      string    `json:"namespace"`
 }
 
-func ClusterCreated(
-	clusterID uuid.UUID,
-	organizationID uuid.UUID,
-	name string,
-	namespace string,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		Cluster_CREATED,
-		ClusterCreatedPayload{
-			ClusterID:      clusterID,
-			OrganizationID: organizationID,
-			Name:           name,
-			Namespace:      namespace,
-		},
-	)
+func ClusterCreated(clusterID, organizationID uuid.UUID, name, namespace string) domain.Event {
+	return domain.NewEvent(Cluster_CREATED, ClusterCreatedPayload{
+		ClusterID:      clusterID,
+		OrganizationID: organizationID,
+		Name:           name,
+		Namespace:      namespace,
+	})
 }
 
 type ClusterPromotedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterPromoted(
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		Cluster_PROMOTED,
-		ClusterPromotedPayload{
-			ClusterID: clusterID,
-		},
-	)
+func ClusterPromoted(clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(Cluster_PROMOTED, ClusterPromotedPayload{
+		ClusterID: clusterID,
+	})
 }
 
 type ClusterMigratedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterMigrated(
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		Cluster_MIGRATED,
-		ClusterMigratedPayload{
-			ClusterID: clusterID,
-		},
-	)
+func ClusterMigrated(clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(Cluster_MIGRATED, ClusterMigratedPayload{
+		ClusterID: clusterID,
+	})
 }
 
 type ClusterDeletedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterDeleted(
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		Cluster_DELETED,
-		ClusterDeletedPayload{
-			ClusterID: clusterID,
-		},
+func ClusterDeleted(clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(Cluster_DELETED, ClusterDeletedPayload{
+		ClusterID: clusterID,
+	},
 	)
 }
 
@@ -97,18 +73,12 @@ type ClusterAgentRegisteredPayload struct {
 	Version   string    `json:"version"`
 }
 
-func ClusterAgentRegistered(
-	agentID uuid.UUID,
-	clusterID uuid.UUID,
-	version string,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		ClusterAgent_REGISTERED,
-		ClusterAgentRegisteredPayload{
-			AgentID:   agentID,
-			ClusterID: clusterID,
-			Version:   version,
-		},
+func ClusterAgentRegistered(agentID, clusterID uuid.UUID, version string) domain.Event {
+	return domain.NewEvent(ClusterAgent_REGISTERED, ClusterAgentRegisteredPayload{
+		AgentID:   agentID,
+		ClusterID: clusterID,
+		Version:   version,
+	},
 	)
 }
 
@@ -117,16 +87,11 @@ type ClusterAgentHeartbeatPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterAgentHeartbeat(
-	agentID uuid.UUID,
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		ClusterAgent_HEARTBEAT,
-		ClusterAgentHeartbeatPayload{
-			AgentID:   agentID,
-			ClusterID: clusterID,
-		},
+func ClusterAgentHeartbeat(agentID, clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(ClusterAgent_HEARTBEAT, ClusterAgentHeartbeatPayload{
+		AgentID:   agentID,
+		ClusterID: clusterID,
+	},
 	)
 }
 
@@ -136,17 +101,11 @@ type ClusterRuntimeDeployedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterRuntimeDeployed(
-	runtimeID uuid.UUID,
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		ClusterRuntime_DEPLOYED,
-		ClusterRuntimeDeployedPayload{
-			RuntimeID: runtimeID,
-			ClusterID: clusterID,
-		},
-	)
+func ClusterRuntimeDeployed(runtimeID, clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(ClusterRuntime_DEPLOYED, ClusterRuntimeDeployedPayload{
+		RuntimeID: runtimeID,
+		ClusterID: clusterID,
+	})
 }
 
 type ClusterRuntimeUpdatedPayload struct {
@@ -154,17 +113,11 @@ type ClusterRuntimeUpdatedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterRuntimeUpdated(
-	runtimeID uuid.UUID,
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		ClusterRuntime_UPDATED,
-		ClusterRuntimeUpdatedPayload{
-			RuntimeID: runtimeID,
-			ClusterID: clusterID,
-		},
-	)
+func ClusterRuntimeUpdated(runtimeID, clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(ClusterRuntime_UPDATED, ClusterRuntimeUpdatedPayload{
+		RuntimeID: runtimeID,
+		ClusterID: clusterID,
+	})
 }
 
 type ClusterRuntimeDeletedPayload struct {
@@ -172,20 +125,14 @@ type ClusterRuntimeDeletedPayload struct {
 	ClusterID uuid.UUID `json:"cluster_id"`
 }
 
-func ClusterRuntimeDeleted(
-	runtimeID uuid.UUID,
-	clusterID uuid.UUID,
-) domain.Event[Cluster] {
-	return domain.NewEvent(
-		ClusterRuntime_DELETED,
-		ClusterRuntimeDeletedPayload{
-			RuntimeID: runtimeID,
-			ClusterID: clusterID,
-		},
-	)
+func ClusterRuntimeDeleted(runtimeID, clusterID uuid.UUID) domain.Event {
+	return domain.NewEvent(ClusterRuntime_DELETED, ClusterRuntimeDeletedPayload{
+		RuntimeID: runtimeID,
+		ClusterID: clusterID,
+	})
 }
 
-var ClusterMapper = domain.NewEventMapper[Cluster]().
+var ClusterMapper = domain.NewEventMapper().
 	Decoder(Cluster_CREATED, domain.JSONDecoder[ClusterCreatedPayload]()).
 	Decoder(Cluster_PROMOTED, domain.JSONDecoder[ClusterPromotedPayload]()).
 	Decoder(Cluster_MIGRATED, domain.JSONDecoder[ClusterMigratedPayload]()).
@@ -195,4 +142,3 @@ var ClusterMapper = domain.NewEventMapper[Cluster]().
 	Decoder(ClusterRuntime_DEPLOYED, domain.JSONDecoder[ClusterRuntimeDeployedPayload]()).
 	Decoder(ClusterRuntime_UPDATED, domain.JSONDecoder[ClusterRuntimeUpdatedPayload]()).
 	Decoder(ClusterRuntime_DELETED, domain.JSONDecoder[ClusterRuntimeDeletedPayload]())
-

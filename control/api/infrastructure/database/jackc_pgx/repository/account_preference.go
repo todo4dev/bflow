@@ -6,7 +6,6 @@ import (
 	"src/domain/entity"
 	"src/domain/repository"
 	"src/port/database"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -24,21 +23,13 @@ func NewAccountPreference(client database.Client) repository.AccountPreference {
 }
 
 func (r *AccountPreference) Create(preference *entity.AccountPreference) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		INSERT INTO "` + r.tableName + `" (
-			id,
-			ts,
-			theme,
-			notify_on_pipeline_success,
-			notify_on_infra_alerts,
-			account_id
+			"id", "ts", "theme", "notify_on_pipeline_success", 
+			"notify_on_infra_alerts", "account_id"
 		) VALUES ($1, $2, $3, $4, $5, $6)
 	`
-
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		preference.ID,
 		preference.TS,
 		preference.Theme,
@@ -51,46 +42,35 @@ func (r *AccountPreference) Create(preference *entity.AccountPreference) error {
 }
 
 func (r *AccountPreference) Save(preference *entity.AccountPreference) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "` + r.tableName + `" SET
-			ts = $1,
-			theme = $2,
-			notify_on_pipeline_success = $3,
-			notify_on_infra_alerts = $4
-		WHERE id = $5
+			"ts" = $1,
+			"theme" = $2,
+			"notify_on_pipeline_success" = $3,
+			"notify_on_infra_alerts" = $4
+		WHERE "id" = $5
 	`
-
-	_, err := r.client.Exec(ctx, query,
-		preference.TS,
-		preference.Theme,
-		preference.NotifyOnPipelineSuccess,
-		preference.NotifyOnInfraAlerts,
-		preference.ID,
+	_, err := r.client.Exec(context.Background(), query,
+		preference.TS, preference.Theme, preference.NotifyOnPipelineSuccess,
+		preference.NotifyOnInfraAlerts, preference.ID,
 	)
 
 	return err
 }
 
 func (r *AccountPreference) FindByAccountId(accountId uuid.UUID) (*entity.AccountPreference, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
-		SELECT id, ts, theme, notify_on_pipeline_success, notify_on_infra_alerts, account_id
+		SELECT 
+			"id", "ts", "theme", "notify_on_pipeline_success", "notify_on_infra_alerts", 
+			"account_id"
 		FROM "` + r.tableName + `"
-		WHERE account_id = $1
+		WHERE "account_id" = $1
 	`
 
 	var preference entity.AccountPreference
-	err := r.client.QueryRow(ctx, query, accountId).Scan(
-		&preference.ID,
-		&preference.TS,
-		&preference.Theme,
-		&preference.NotifyOnPipelineSuccess,
-		&preference.NotifyOnInfraAlerts,
+	err := r.client.QueryRow(context.Background(), query, accountId).Scan(
+		&preference.ID, &preference.TS, &preference.Theme,
+		&preference.NotifyOnPipelineSuccess, &preference.NotifyOnInfraAlerts,
 		&preference.AccountID,
 	)
 	if err != nil {

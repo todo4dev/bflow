@@ -30,28 +30,28 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 })
 
 type Handler struct {
-	domainUow              domain.Uow
-	loggingLogger          logging.Logger
-	brokerPublisherAccount broker.Publisher[event.Account]
-	cacheClient            cache.Client
+	domainUow       domain.Uow
+	loggingLogger   logging.Logger
+	brokerPublisher broker.Client
+	cacheClient     cache.Client
 }
 
 func New(
 	domainUow domain.Uow,
 	cacheClient cache.Client,
 	loggingLogger logging.Logger,
-	brokerPublisherAccount broker.Publisher[event.Account],
+	brokerPublisher broker.Client,
 ) *Handler {
 	return &Handler{
-		domainUow:              domainUow,
-		cacheClient:            cacheClient,
-		loggingLogger:          loggingLogger,
-		brokerPublisherAccount: brokerPublisherAccount,
+		domainUow:       domainUow,
+		cacheClient:     cacheClient,
+		loggingLogger:   loggingLogger,
+		brokerPublisher: brokerPublisher,
 	}
 }
 
 func (h *Handler) findCachedKeyByOTP(ctx context.Context, otp string) (accountID uuid.UUID, key string, err error) {
-	match := fmt.Sprintf("account:*:otp:%s", otp)
+	match := fmt.Sprintf("account:*:otp:%s:activate", otp)
 	key, _, err = h.cacheClient.Get(ctx, match)
 	if err != nil {
 		return uuid.Nil, "", &issue.AccountInvalidOTP{}
@@ -85,34 +85,48 @@ func (h *Handler) activateAccount(account *entity.Account) error {
 	return nil
 }
 
-func (h *Handler) Handle(ctx context.Context, data *Data) (any, error) {
+func (h *Handler) deleteKey(key string) {
+	go func() {
+		ctx := context.Background()
+		if err := h.cacheClient.Delete(ctx, key); err != nil {
+			h.loggingLogger.Error(ctx, "failed to delete key", err)
+		}
+	}()
+}
+
+func (h *Handler) publishAccountActivated(accountID uuid.UUID) {
+	go func() {
+		ctx := context.Background()
+		if err := h.brokerPublisher.Publish(ctx, event.AccountActivated(accountID)); err != nil {
+			h.loggingLogger.Error(ctx, "failed to publish message", err)
+		}
+	}()
+}
+
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
 	if _, err := dataSchema.Validate(*data); err != nil {
-		return nil, err
+		return err
 	}
 
 	accountID, key, err := h.findCachedKeyByOTP(ctx, data.OTP)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	account, err := h.findAccountById(accountID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := h.activateAccount(account); err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := h.cacheClient.Delete(ctx, key); err != nil {
-		h.loggingLogger.Error(ctx, "failed to delete key", err)
-	}
+	h.deleteKey(key)
 
-	if err := h.brokerPublisherAccount.Publish(ctx, event.AccountActivated(accountID)); err != nil {
-		h.loggingLogger.Error(ctx, "failed to publish message", err)
-	}
+	h.publishAccountActivated(accountID)
 
-	return nil, nil
+	return nil
 }
 
 func init() {

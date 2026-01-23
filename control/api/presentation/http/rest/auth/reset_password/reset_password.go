@@ -1,7 +1,8 @@
-package activate_account
+// presentation/http/resource/auth/reset_password/reset_password.go
+package reset_password
 
 import (
-	usecase "src/application/auth/activate_account"
+	usecase "src/application/auth/reset_password"
 	"src/domain/issue"
 	"src/presentation/http/router"
 
@@ -16,23 +17,22 @@ func handler(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
-	_, err := di.Resolve[*usecase.Handler]().Handle(c.UserContext(), &data)
-	if err != nil {
+
+	if err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data); err != nil {
 		return err
 	}
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
 func operation(o *oas.Operation) {
-	o.Tags("Auth").Summary("Activate account").
-		Description("Activate account using OTP sent by email")
+	o.Tags("Auth").Summary("Reset Password").
+		Description("Resets the user's password using the OTP code sent by email.")
 	router.BodyJson(o, router.SchemaAs[usecase.Data]())
-	router.ResponseStatus(o, fiber.StatusOK, "Account activated")
-	router.ResponseIssueAs[*validate.ValidationError](o, fiber.StatusBadRequest)
+	router.ResponseStatus(o, fiber.StatusOK, "Password reset successfully")
 	router.ResponseIssueAs[*issue.AccountNotFound](o, fiber.StatusNotFound)
-	router.ResponseIssueAs[*issue.AccountAlreadyActivated](o, fiber.StatusNotAcceptable)
 	router.ResponseIssueAs[*issue.AccountInvalidOTP](o, fiber.StatusConflict)
-	router.ResponseStatus(o, fiber.StatusUnprocessableEntity, "Unprocessable entity")
+	router.ResponseIssueAs[*validate.ValidationError](o, fiber.StatusUnprocessableEntity)
 }
 
 var Route = router.

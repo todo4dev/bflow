@@ -7,12 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Artifact string
-
 const (
-	Artifact_UPLOADED         Artifact = "artifact.uploaded"
-	ArtifactRelease_PUBLISHED Artifact = "artifact.release_published"
-	ArtifactRelease_PROMOTED  Artifact = "artifact.release_promoted"
+	Artifact_UPLOADED         = "artifact.uploaded"
+	ArtifactRelease_PUBLISHED = "artifact.release_published"
+	ArtifactRelease_PROMOTED  = "artifact.release_promoted"
 )
 
 type ArtifactUploadedPayload struct {
@@ -21,19 +19,12 @@ type ArtifactUploadedPayload struct {
 	Name       string    `json:"name"`
 }
 
-func ArtifactUploaded(
-	artifactID uuid.UUID,
-	kind string,
-	name string,
-) domain.Event[Artifact] {
-	return domain.NewEvent(
-		Artifact_UPLOADED,
-		ArtifactUploadedPayload{
-			ArtifactID: artifactID,
-			Kind:       kind,
-			Name:       name,
-		},
-	)
+func ArtifactUploaded(artifactID uuid.UUID, kind string, name string) domain.Event {
+	return domain.NewEvent(Artifact_UPLOADED, ArtifactUploadedPayload{
+		ArtifactID: artifactID,
+		Kind:       kind,
+		Name:       name,
+	})
 }
 
 // Nested entity: Release
@@ -44,21 +35,13 @@ type ArtifactReleasePublishedPayload struct {
 	Channel    string    `json:"channel"`
 }
 
-func ArtifactReleasePublished(
-	releaseID uuid.UUID,
-	artifactID uuid.UUID,
-	version string,
-	channel string,
-) domain.Event[Artifact] {
-	return domain.NewEvent(
-		ArtifactRelease_PUBLISHED,
-		ArtifactReleasePublishedPayload{
-			ReleaseID:  releaseID,
-			ArtifactID: artifactID,
-			Version:    version,
-			Channel:    channel,
-		},
-	)
+func ArtifactReleasePublished(releaseID, artifactID uuid.UUID, version, channel string) domain.Event {
+	return domain.NewEvent(ArtifactRelease_PUBLISHED, ArtifactReleasePublishedPayload{
+		ReleaseID:  releaseID,
+		ArtifactID: artifactID,
+		Version:    version,
+		Channel:    channel,
+	})
 }
 
 type ArtifactReleasePromotedPayload struct {
@@ -67,23 +50,15 @@ type ArtifactReleasePromotedPayload struct {
 	Version    string    `json:"version"`
 }
 
-func ArtifactReleasePromoted(
-	releaseID uuid.UUID,
-	artifactID uuid.UUID,
-	version string,
-) domain.Event[Artifact] {
-	return domain.NewEvent(
-		ArtifactRelease_PROMOTED,
-		ArtifactReleasePromotedPayload{
-			ReleaseID:  releaseID,
-			ArtifactID: artifactID,
-			Version:    version,
-		},
-	)
+func ArtifactReleasePromoted(releaseID, artifactID uuid.UUID, version string) domain.Event {
+	return domain.NewEvent(ArtifactRelease_PROMOTED, ArtifactReleasePromotedPayload{
+		ReleaseID:  releaseID,
+		ArtifactID: artifactID,
+		Version:    version,
+	})
 }
 
-var ArtifactMapper = domain.NewEventMapper[Artifact]().
+var ArtifactMapper = domain.NewEventMapper().
 	Decoder(Artifact_UPLOADED, domain.JSONDecoder[ArtifactUploadedPayload]()).
 	Decoder(ArtifactRelease_PUBLISHED, domain.JSONDecoder[ArtifactReleasePublishedPayload]()).
 	Decoder(ArtifactRelease_PROMOTED, domain.JSONDecoder[ArtifactReleasePromotedPayload]())
-

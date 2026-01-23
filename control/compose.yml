@@ -108,6 +108,7 @@ services:
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
     healthcheck:
       test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list" ]
       interval: 10s
@@ -176,11 +177,10 @@ services:
       - |
         ./manage.py migrate
         ./manage.py createsuperuser --no-input || true
-        python manage.py shell <<EOF
-        import re, os
+        python manage.py shell <<'PYTHON_EOF'
+        import os
         from django.apps import apps
         
-        # Busca os modelos de forma segura
         Organization = apps.get_model('organizations_ext', 'Organization')
         Project = apps.get_model('projects', 'Project')
         Team = apps.get_model('teams', 'Team')
@@ -189,7 +189,6 @@ services:
 
         user = User.objects.filter(is_superuser=True).first()
         if user:
-            # 1. Garantir Organização
             org, _ = Organization.objects.get_or_create(
                 slug='default-org', 
                 defaults={'name': 'Default Org'}
@@ -197,22 +196,18 @@ services:
             if not org.users.filter(id=user.id).exists():
                 org.add_user(user, role='owner')
             
-            # 2. Garantir Time
             team, _ = Team.objects.get_or_create(
                 slug='default-team', 
                 organization=org
             )
             
-            # 3. Garantir Projeto (Removido 'team' dos argumentos de criação)
             project, created = Project.objects.get_or_create(
                 slug='default-project',
                 organization=org
             )
             
-            # 4. Vincular Projeto ao Time (Relação Many-to-Many)
             team.projects.add(project)
             
-            # 5. Gerar e Capturar DSN
             key = ProjectKey.objects.filter(project=project).first()
             if not key:
                 key = ProjectKey.objects.create(project=project)
@@ -222,22 +217,28 @@ services:
             ext_port = os.getenv('EXT_PORT', '8000')
             new_dsn = f"http://{public_key}@localhost:{ext_port}/{project_id}"
             
-            # 6. Atualizar arquivo .env
             env_path = '.env'
             if os.path.exists(env_path):
                 with open(env_path, 'r') as f:
-                    content = f.read()
+                    lines = f.readlines()
                 
-                pattern = r'APP_TRACE_URL=.*'
-                replacement = f'APP_TRACE_URL="{new_dsn}"'
+                updated = False
+                for i, line in enumerate(lines):
+                    if line.strip().startswith('APP_TRACE_URL'):
+                        parts = line.split('=', 1)
+                        if len(parts) == 2:
+                            var_part = parts[0]
+                            lines[i] = f'{var_part}= "{new_dsn}"\n'
+                            updated = True
+                            break
                 
-                if re.search(pattern, content):
-                    new_content = re.sub(pattern, replacement, content)
-                else:
-                    new_content = content + f'\n{replacement}'
+                if not updated:
+                    if lines and not lines[-1].endswith('\n'):
+                        lines[-1] += '\n'
+                    lines.append(f'APP_TRACE_URL      = "{new_dsn}"\n')
                 
                 with open(env_path, 'w') as f:
-                    f.write(new_content)
+                    f.writelines(lines)
                 print(f"--- [OK] APP_TRACE_URL atualizado: {new_dsn} ---")
-        EOF
+        PYTHON_EOF
         exec /code/bin/run-all-in-one.sh

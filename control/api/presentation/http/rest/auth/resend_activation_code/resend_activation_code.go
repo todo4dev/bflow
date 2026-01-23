@@ -1,4 +1,4 @@
-// presentation/http/resource/auth/resend_activation_code/resend_activation_code.go
+// presentation/http/rest/auth/resend_activation_code/resend_activation_code.go
 package resend_activation_code
 
 import (
@@ -17,8 +17,7 @@ func handler(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
 
-	_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data)
-	if err != nil {
+	if err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data); err != nil {
 		return err
 	}
 

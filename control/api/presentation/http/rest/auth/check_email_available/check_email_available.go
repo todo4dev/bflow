@@ -1,4 +1,4 @@
-// presentation/http/resource/auth/check_email_available/route.go
+// presentation/http/rest/auth/check_email_available/route.go
 package check_email_available
 
 import (
@@ -15,8 +15,7 @@ import (
 func handler(c *fiber.Ctx) error {
 	email, _ := url.QueryUnescape(c.Params("email"))
 	data := &usecase.Data{Email: email}
-	_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), data)
-	if err != nil {
+	if err := di.Resolve[*usecase.Handler]().Handle(c.Context(), data); err != nil {
 		return err
 	}
 	return c.SendStatus(fiber.StatusOK)

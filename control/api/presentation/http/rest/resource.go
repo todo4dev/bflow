@@ -1,9 +1,9 @@
-// presentation/http/resource/resource.go
+// presentation/http/rest/resource.go
 package resource
 
 import (
-	"src/presentation/http/resource/auth"
-	"src/presentation/http/resource/system"
+	"src/presentation/http/rest/auth"
+	"src/presentation/http/rest/system"
 	"src/presentation/http/router"
 )
 

@@ -3,7 +3,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"src/domain/entity"
 	"src/domain/repository"
@@ -24,9 +23,6 @@ func NewSubscriptionInvoice(client database.Client) *SubscriptionInvoice {
 var _ repository.SubscriptionInvoice = (*SubscriptionInvoice)(nil)
 
 func (r *SubscriptionInvoice) Create(t *entity.SubscriptionInvoice) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		INSERT INTO "subscription_invoice" (
 			"id", "ts", "created_at", "deleted_at", "status", "currency",
@@ -34,7 +30,7 @@ func (r *SubscriptionInvoice) Create(t *entity.SubscriptionInvoice) error {
 			"stripe_invoice_key", "subscription_id"
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.CreatedAt, t.DeletedAt, t.Status, t.Currency,
 		t.TotalCents, t.TaxCents, t.DiscountCents, t.DueAt, t.PaidAt,
 		t.StripeInvoiceKey, t.SubscriptionID,
@@ -43,9 +39,6 @@ func (r *SubscriptionInvoice) Create(t *entity.SubscriptionInvoice) error {
 }
 
 func (r *SubscriptionInvoice) Save(t *entity.SubscriptionInvoice) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "subscription_invoice" SET
 			"ts" = $2, "deleted_at" = $3, "status" = $4, "currency" = $5,
@@ -53,7 +46,7 @@ func (r *SubscriptionInvoice) Save(t *entity.SubscriptionInvoice) error {
 			"due_at" = $9, "paid_at" = $10, "stripe_invoice_key" = $11
 		WHERE "id" = $1
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.DeletedAt, t.Status, t.Currency,
 		t.TotalCents, t.TaxCents, t.DiscountCents, t.DueAt, t.PaidAt,
 		t.StripeInvoiceKey,
@@ -62,18 +55,12 @@ func (r *SubscriptionInvoice) Save(t *entity.SubscriptionInvoice) error {
 }
 
 func (r *SubscriptionInvoice) Delete(id uuid.UUID) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `DELETE FROM "subscription_invoice" WHERE "id" = $1`
-	_, err := r.client.Exec(ctx, query, id)
+	_, err := r.client.Exec(context.Background(), query, id)
 	return err
 }
 
 func (r *SubscriptionInvoice) FindById(id uuid.UUID) (*entity.SubscriptionInvoice, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "status", "currency",
@@ -83,7 +70,7 @@ func (r *SubscriptionInvoice) FindById(id uuid.UUID) (*entity.SubscriptionInvoic
 		WHERE "id" = $1
 	`
 	var t entity.SubscriptionInvoice
-	if err := r.client.QueryRow(ctx, query, id).Scan(
+	if err := r.client.QueryRow(context.Background(), query, id).Scan(
 		&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.Status, &t.Currency,
 		&t.TotalCents, &t.TaxCents, &t.DiscountCents, &t.DueAt, &t.PaidAt,
 		&t.StripeInvoiceKey, &t.SubscriptionID,
@@ -97,9 +84,6 @@ func (r *SubscriptionInvoice) FindById(id uuid.UUID) (*entity.SubscriptionInvoic
 }
 
 func (r *SubscriptionInvoice) FindBySubscriptionId(subscriptionId uuid.UUID) ([]*entity.SubscriptionInvoice, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "status", "currency",
@@ -108,7 +92,7 @@ func (r *SubscriptionInvoice) FindBySubscriptionId(subscriptionId uuid.UUID) ([]
 		FROM "subscription_invoice"
 		WHERE "subscription_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, subscriptionId)
+	rows, err := r.client.Query(context.Background(), query, subscriptionId)
 	if err != nil {
 		return nil, err
 	}

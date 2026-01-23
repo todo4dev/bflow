@@ -7,12 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Plan string
-
 const (
-	Plan_CREATED Plan = "plan.created"
-	Plan_UPDATED Plan = "plan.updated"
-	Plan_DELETED Plan = "plan.deleted"
+	Plan_CREATED = "plan.created"
+	Plan_UPDATED = "plan.updated"
+	Plan_DELETED = "plan.deleted"
 )
 
 type PlanCreatedPayload struct {
@@ -24,25 +22,15 @@ type PlanCreatedPayload struct {
 	Currency   string    `json:"currency"`
 }
 
-func PlanCreated(
-	planID uuid.UUID,
-	code string,
-	name string,
-	interval string,
-	priceCents int,
-	currency string,
-) domain.Event[Plan] {
-	return domain.NewEvent(
-		Plan_CREATED,
-		PlanCreatedPayload{
-			PlanID:     planID,
-			Code:       code,
-			Name:       name,
-			Interval:   interval,
-			PriceCents: priceCents,
-			Currency:   currency,
-		},
-	)
+func PlanCreated(planID uuid.UUID, code, name, interval string, priceCents int, currency string) domain.Event {
+	return domain.NewEvent(Plan_CREATED, PlanCreatedPayload{
+		PlanID:     planID,
+		Code:       code,
+		Name:       name,
+		Interval:   interval,
+		PriceCents: priceCents,
+		Currency:   currency,
+	})
 }
 
 type PlanUpdatedPayload struct {
@@ -51,38 +39,25 @@ type PlanUpdatedPayload struct {
 	PriceCents int       `json:"price_cents"`
 }
 
-func PlanUpdated(
-	planID uuid.UUID,
-	name string,
-	priceCents int,
-) domain.Event[Plan] {
-	return domain.NewEvent(
-		Plan_UPDATED,
-		PlanUpdatedPayload{
-			PlanID:     planID,
-			Name:       name,
-			PriceCents: priceCents,
-		},
-	)
+func PlanUpdated(planID uuid.UUID, name string, priceCents int) domain.Event {
+	return domain.NewEvent(Plan_UPDATED, PlanUpdatedPayload{
+		PlanID:     planID,
+		Name:       name,
+		PriceCents: priceCents,
+	})
 }
 
 type PlanDeletedPayload struct {
 	PlanID uuid.UUID `json:"plan_id"`
 }
 
-func PlanDeleted(
-	planID uuid.UUID,
-) domain.Event[Plan] {
-	return domain.NewEvent(
-		Plan_DELETED,
-		PlanDeletedPayload{
-			PlanID: planID,
-		},
-	)
+func PlanDeleted(planID uuid.UUID) domain.Event {
+	return domain.NewEvent(Plan_DELETED, PlanDeletedPayload{
+		PlanID: planID,
+	})
 }
 
-var PlanMapper = domain.NewEventMapper[Plan]().
+var PlanMapper = domain.NewEventMapper().
 	Decoder(Plan_CREATED, domain.JSONDecoder[PlanCreatedPayload]()).
 	Decoder(Plan_UPDATED, domain.JSONDecoder[PlanUpdatedPayload]()).
 	Decoder(Plan_DELETED, domain.JSONDecoder[PlanDeletedPayload]())
-

@@ -1,0 +1,152 @@
+package reset_password
+
+import (
+	"context"
+	"fmt"
+
+	"src/domain"
+	"src/domain/constant"
+	"src/domain/entity"
+	"src/domain/event"
+	"src/domain/issue"
+	"src/port/broker"
+	"src/port/cache"
+	"src/port/logging"
+
+	"github.com/google/uuid"
+	"github.com/leandroluk/gox/meta"
+	"github.com/leandroluk/gox/util"
+	"github.com/leandroluk/gox/validate"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type Data struct {
+	OTP         string `json:"otp"`
+	Email       string `json:"email"`
+	NewPassword string `json:"new_password"`
+}
+
+var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
+	s.Field(&t.OTP).Text().Required().Min(6).Max(6)
+	s.Field(&t.Email).Text().Required().Email()
+	s.Field(&t.NewPassword).Text().Required().Pattern(constant.ACCOUNT_CREDENTIAL_PASSWORD_REGEX)
+})
+
+type Handler struct {
+	domainUow       domain.Uow
+	loggingLogger   logging.Logger
+	brokerPublisher broker.Client
+	cacheClient     cache.Client
+}
+
+func New(
+	domainUow domain.Uow,
+	loggingLogger logging.Logger,
+	brokerPublisher broker.Client,
+	cacheClient cache.Client,
+) *Handler {
+	return &Handler{
+		domainUow:       domainUow,
+		loggingLogger:   loggingLogger,
+		brokerPublisher: brokerPublisher,
+		cacheClient:     cacheClient,
+	}
+}
+
+func (h *Handler) findActiveAccountByEmail(email string) (*entity.Account, error) {
+	account, err := h.domainUow.Account().FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, &issue.AccountNotFound{}
+	}
+	if account.EmailVerifiedAt == nil {
+		return nil, &issue.AccountNotFound{}
+	}
+	if account.DeletedAt != nil {
+		return nil, &issue.AccountNotFound{}
+	}
+	return account, nil
+}
+
+func (h *Handler) verifyOTP(ctx context.Context, accountID string, inputOTP string) error {
+	match := fmt.Sprintf("account:%s:recover_otp", accountID)
+	key, storedOTP, err := h.cacheClient.Get(ctx, match)
+	if err != nil {
+		return &issue.AccountInvalidOTP{}
+	}
+	if key == "" || storedOTP != inputOTP {
+		return &issue.AccountInvalidOTP{}
+	}
+	_ = h.cacheClient.Delete(ctx, match)
+	return nil
+}
+
+func (h *Handler) updatePassword(accountID string, newPassword string) error {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return h.domainUow.Do(func(t domain.Repository) error {
+		accountCredential := util.Must(t.AccountCredential().FindByAccountId(uuid.MustParse(accountID)))
+		if accountCredential == nil {
+			return &issue.AccountNotFound{}
+		}
+		accountCredential.PasswordHash = string(passwordHash)
+		return t.AccountCredential().Save(accountCredential)
+	})
+}
+
+func (h *Handler) publishAccountCredentialChanged(accountID uuid.UUID) {
+	go func() {
+		ctx := context.Background()
+		event := event.AccountCredentialChanged(accountID)
+		if err := h.brokerPublisher.Publish(ctx, event); err != nil {
+			msg := fmt.Sprintf("failed to publish AccountCredentialChanged event to %s", accountID.String())
+			h.loggingLogger.Error(ctx, msg, err)
+		}
+	}()
+}
+
+func (h *Handler) Handle(ctx context.Context, data *Data) error {
+	if _, err := dataSchema.Validate(*data); err != nil {
+		return err
+	}
+
+	account, err := h.findActiveAccountByEmail(data.Email)
+	if err != nil {
+		return err
+	}
+
+	err = h.verifyOTP(ctx, account.ID.String(), data.OTP)
+	if err != nil {
+		return err
+	}
+
+	err = h.updatePassword(account.ID.String(), data.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	h.publishAccountCredentialChanged(account.ID)
+
+	return nil
+}
+
+func init() {
+	data := Data{
+		OTP:         "123456",
+		Email:       "john.doe@email.com",
+		NewPassword: "NewTest@123"}
+	meta.Describe(&data, meta.Description("Data for resetting password"),
+		meta.Field(&data.OTP, meta.Description("6-digit recovery code")),
+		meta.Field(&data.Email, meta.Description("Account email address")),
+		meta.Field(&data.NewPassword, meta.Description("New password complying with security rules")),
+		meta.Example(data))
+
+	meta.Describe(&Handler{}, meta.Description("Handler for resetting user password"),
+		meta.Throws[*issue.AccountNotFound](),
+		meta.Throws[*issue.AccountInvalidOTP]())
+}

@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"src/domain"
 	"src/port/broker"
+	"sync"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
-type Client[TKind ~string] struct {
+type Client struct {
 	config *Config
 	writer *kafka.Writer
 	dialer *kafka.Dialer
@@ -21,31 +22,35 @@ type Client[TKind ~string] struct {
 	// Consumer state
 	topics []string
 	reader *kafka.Reader
+
+	// Topic creation cache
+	createdTopics map[string]bool
+	topicMutex    sync.RWMutex
 }
 
-var _ broker.Client[string] = (*Client[string])(nil)
+var _ broker.Client = (*Client)(nil)
 
-func NewClient[TKind ~string](config *Config) (*Client[TKind], error) {
+func NewClient(config *Config) (*Client, error) {
 	dialer := &kafka.Dialer{Timeout: 10 * time.Second, DualStack: true}
-	client := &Client[TKind]{config: config, dialer: dialer}
+	client := &Client{
+		config:        config,
+		dialer:        dialer,
+		createdTopics: make(map[string]bool),
+		writer: &kafka.Writer{
+			Addr:                   kafka.TCP(config.Brokers...),
+			Balancer:               &kafka.LeastBytes{},
+			AllowAutoTopicCreation: true,
+			Transport:              &kafka.Transport{Dial: dialer.DialFunc},
+		},
+	}
 	return client, nil
 }
 
-func (c *Client[TKind]) Connect(ctx context.Context) error {
-	// Initialize writer shared instance
-	c.writer = &kafka.Writer{
-		Addr:     kafka.TCP(c.config.Brokers...),
-		Balancer: &kafka.LeastBytes{},
-	}
-	// Verify connection
-	return c.Ping(ctx)
-}
-
-func (c *Client[TKind]) Ping(ctx context.Context) error {
+func (c *Client) Ping(ctx context.Context) error {
 	if len(c.config.Brokers) == 0 {
 		return fmt.Errorf("no brokers configured")
 	}
-	// Try to dial the first broker to check connectivity
+
 	conn, err := c.dialer.DialContext(ctx, "tcp", c.config.Brokers[0])
 	if err != nil {
 		return err
@@ -54,14 +59,14 @@ func (c *Client[TKind]) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client[TKind]) Close() error {
+func (c *Client) Close() error {
 	if c.writer != nil {
 		return c.writer.Close()
 	}
 	return nil
 }
 
-func (c *Client[TKind]) Subscribe(topics ...TKind) error {
+func (c *Client) Subscribe(topics ...string) error {
 	if c.reader != nil {
 		return errors.New("consumer already started, cannot subscribe")
 	}
@@ -76,7 +81,7 @@ func (c *Client[TKind]) Subscribe(topics ...TKind) error {
 	return nil
 }
 
-func (c *Client[TKind]) Consume(ctx context.Context, handler func(ctx context.Context, event domain.Event[TKind]) error) error {
+func (c *Client) Consume(ctx context.Context, handler func(ctx context.Context, event domain.Event) error) error {
 	if len(c.topics) == 0 {
 		return errors.New("no topics subscribed")
 	}
@@ -115,9 +120,9 @@ func (c *Client[TKind]) Consume(ctx context.Context, handler func(ctx context.Co
 
 			for _, h := range m.Headers {
 				switch h.Key {
-				case "OccurredAt":
+				case "occurred_at":
 					occurredAt, _ = time.Parse(time.RFC3339, string(h.Value))
-				case "IdempotencyKey":
+				case "idempotency_key":
 					idempotencyKey = string(h.Value)
 				}
 			}
@@ -129,16 +134,14 @@ func (c *Client[TKind]) Consume(ctx context.Context, handler func(ctx context.Co
 			}
 
 			// Extract Kind from topic (remove prefix)
-			// Assuming prefix length is fixed or we can strip it.
-			// Currently prefix is c.config.TopicPrefix.
 			topic := m.Topic
 			kindStr := topic
 			if len(c.config.TopicPrefix) > 0 && len(topic) > len(c.config.TopicPrefix) {
 				kindStr = topic[len(c.config.TopicPrefix):]
 			}
 
-			event := domain.Event[TKind]{
-				Kind:           TKind(kindStr),
+			event := domain.Event{
+				Kind:           kindStr,
 				IdempotencyKey: idempotencyKey,
 				OccurredAt:     occurredAt,
 				Payload:        payload,
@@ -155,21 +158,80 @@ func (c *Client[TKind]) Consume(ctx context.Context, handler func(ctx context.Co
 	}
 }
 
-func (c *Client[TKind]) Publish(ctx context.Context, event domain.Event[TKind]) error {
-	b, err := json.Marshal(event.Payload)
+// ensureTopicExists creates the topic if it doesn't exist
+func (c *Client) ensureTopicExists(ctx context.Context, topic string) error {
+	// Check cache first
+	c.topicMutex.RLock()
+	if c.createdTopics[topic] {
+		c.topicMutex.RUnlock()
+		return nil
+	}
+	c.topicMutex.RUnlock()
+
+	// Try to create topic
+	c.topicMutex.Lock()
+	defer c.topicMutex.Unlock()
+
+	// Double-check after acquiring write lock
+	if c.createdTopics[topic] {
+		return nil
+	}
+
+	conn, err := c.dialer.DialLeader(ctx, "tcp", c.config.Brokers[0], topic, 0)
+	if err != nil {
+		// If we can't dial the leader, try to create the topic
+		conn, err = c.dialer.DialContext(ctx, "tcp", c.config.Brokers[0])
+		if err != nil {
+			return fmt.Errorf("failed to connect to broker: %w", err)
+		}
+		defer conn.Close()
+
+		// Create topic with default configuration
+		topicConfigs := []kafka.TopicConfig{
+			{
+				Topic:             topic,
+				NumPartitions:     1,
+				ReplicationFactor: 1,
+			},
+		}
+
+		err = conn.CreateTopics(topicConfigs...)
+		if err != nil {
+			// Ignore "topic already exists" errors
+			var kafkaErr kafka.Error
+			if errors.As(err, &kafkaErr) && kafkaErr.Title() == "Topic Already Exists" {
+				c.createdTopics[topic] = true
+				return nil
+			}
+			return fmt.Errorf("failed to create topic %s: %w", topic, err)
+		}
+	} else {
+		conn.Close()
+	}
+
+	// Mark as created
+	c.createdTopics[topic] = true
+	return nil
+}
+
+func (c *Client) Publish(ctx context.Context, event domain.Event) error {
+	topic := c.config.TopicPrefix + string(event.Kind)
+
+	// Ensure topic exists before publishing
+	if err := c.ensureTopicExists(ctx, topic); err != nil {
+		return fmt.Errorf("failed to ensure topic exists: %w", err)
+	}
+
+	value, err := json.Marshal(event.Payload)
 	if err != nil {
 		return err
 	}
 
 	headers := []kafka.Header{
-		{Key: "OccurredAt", Value: []byte(event.OccurredAt.Format(time.RFC3339))},
-		{Key: "IdempotencyKey", Value: []byte(event.IdempotencyKey)},
+		{Key: "occurred_at", Value: []byte(event.OccurredAt.Format(time.RFC3339))},
+		{Key: "idempotency_key", Value: []byte(event.IdempotencyKey)},
 	}
 
-	msg := kafka.Message{
-		Topic:   c.config.TopicPrefix + string(event.Kind),
-		Value:   b,
-		Headers: headers,
-	}
+	msg := kafka.Message{Topic: topic, Value: value, Headers: headers}
 	return c.writer.WriteMessages(ctx, msg)
 }

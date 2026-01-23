@@ -1,4 +1,4 @@
-// presentation/http/resource/system/healthcheck/route.go
+// presentation/http/rest/system/healthcheck/route.go
 package healthcheck
 
 import (

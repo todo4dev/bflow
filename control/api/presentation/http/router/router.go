@@ -50,7 +50,7 @@ func (rd *RouteDefinition) Operation(spec func(*oas.Operation)) *RouteDefinition
 	return rd
 }
 
-func Wrapper(app *fiber.App, groups []GroupDefinition) *Router {
+func Wrapper(app *fiber.App, groupBlocks ...[]GroupDefinition) *Router {
 	c := Config{
 		Port:                env.Get("SERVER_PORT", 3000),
 		BasePath:            env.Get("SERVER_BASE_PATH", "/"),
@@ -74,8 +74,10 @@ func Wrapper(app *fiber.App, groups []GroupDefinition) *Router {
 	di.SingletonAs[*Config](func() *Config { return &c })
 	di.SingletonAs[*Router](func() *Router { return &r })
 
-	for _, group := range groups {
-		r.Group(group)
+	for _, groupBlock := range groupBlocks {
+		for _, group := range groupBlock {
+			r.Group(group)
+		}
 	}
 
 	return &r

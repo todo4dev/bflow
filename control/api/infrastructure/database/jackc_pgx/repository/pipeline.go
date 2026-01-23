@@ -3,7 +3,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"src/domain/entity"
 	"src/domain/repository"
@@ -24,9 +23,6 @@ func NewPipeline(client database.Client) *Pipeline {
 var _ repository.Pipeline = (*Pipeline)(nil)
 
 func (r *Pipeline) Create(t *entity.Pipeline) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		INSERT INTO "pipeline" (
 			"id", "ts", "created_at", "deleted_at", "kind", "status", "payload",
@@ -34,34 +30,28 @@ func (r *Pipeline) Create(t *entity.Pipeline) error {
 			"cluster_runtime_id", "requester_account_id", "organization_id", "previous_pipeline_id"
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.CreatedAt, t.DeletedAt, t.Kind, t.Status, t.Payload,
-		t.StartedAt, t.FinishedAt, t.ErrorMessage, t.TargetReleaseID,
-		t.RuntimeID, t.RequesterAccountID, t.OrganizationID, t.PreviousPipelineID,
+		t.StartedAt, t.FinishedAt, t.ErrorMessage, t.TargetArtifactReleaseID,
+		t.ClusterRuntimeID, t.RequesterAccountID, t.OrganizationID, t.PreviousPipelineID,
 	)
 	return err
 }
 
 func (r *Pipeline) Save(t *entity.Pipeline) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		UPDATE "pipeline" SET
 			"ts" = $2, "deleted_at" = $3, "status" = $4, "started_at" = $5,
 			"finished_at" = $6, "error_message" = $7
 		WHERE "id" = $1
 	`
-	_, err := r.client.Exec(ctx, query,
+	_, err := r.client.Exec(context.Background(), query,
 		t.ID, t.TS, t.DeletedAt, t.Status, t.StartedAt, t.FinishedAt, t.ErrorMessage,
 	)
 	return err
 }
 
 func (r *Pipeline) FindById(id uuid.UUID) (*entity.Pipeline, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "kind", "status", "payload",
@@ -71,10 +61,10 @@ func (r *Pipeline) FindById(id uuid.UUID) (*entity.Pipeline, error) {
 		WHERE "id" = $1
 	`
 	var t entity.Pipeline
-	if err := r.client.QueryRow(ctx, query, id).Scan(
+	if err := r.client.QueryRow(context.Background(), query, id).Scan(
 		&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.Kind, &t.Status, &t.Payload,
-		&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetReleaseID,
-		&t.RuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
+		&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetArtifactReleaseID,
+		&t.ClusterRuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
 	); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
@@ -85,9 +75,6 @@ func (r *Pipeline) FindById(id uuid.UUID) (*entity.Pipeline, error) {
 }
 
 func (r *Pipeline) FindByOrganizationId(organizationId uuid.UUID) ([]*entity.Pipeline, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "kind", "status", "payload",
@@ -96,7 +83,7 @@ func (r *Pipeline) FindByOrganizationId(organizationId uuid.UUID) ([]*entity.Pip
 		FROM "pipeline"
 		WHERE "organization_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, organizationId)
+	rows, err := r.client.Query(context.Background(), query, organizationId)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +94,8 @@ func (r *Pipeline) FindByOrganizationId(organizationId uuid.UUID) ([]*entity.Pip
 		var t entity.Pipeline
 		if err := rows.Scan(
 			&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.Kind, &t.Status, &t.Payload,
-			&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetReleaseID,
-			&t.RuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
+			&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetArtifactReleaseID,
+			&t.ClusterRuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
 		); err != nil {
 			return nil, err
 		}
@@ -118,9 +105,6 @@ func (r *Pipeline) FindByOrganizationId(organizationId uuid.UUID) ([]*entity.Pip
 }
 
 func (r *Pipeline) FindByClusterRuntimeId(runtimeId uuid.UUID) ([]*entity.Pipeline, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	query := `
 		SELECT
 			"id", "ts", "created_at", "deleted_at", "kind", "status", "payload",
@@ -129,7 +113,7 @@ func (r *Pipeline) FindByClusterRuntimeId(runtimeId uuid.UUID) ([]*entity.Pipeli
 		FROM "pipeline"
 		WHERE "cluster_runtime_id" = $1
 	`
-	rows, err := r.client.Query(ctx, query, runtimeId)
+	rows, err := r.client.Query(context.Background(), query, runtimeId)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +124,8 @@ func (r *Pipeline) FindByClusterRuntimeId(runtimeId uuid.UUID) ([]*entity.Pipeli
 		var t entity.Pipeline
 		if err := rows.Scan(
 			&t.ID, &t.TS, &t.CreatedAt, &t.DeletedAt, &t.Kind, &t.Status, &t.Payload,
-			&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetReleaseID,
-			&t.RuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
+			&t.StartedAt, &t.FinishedAt, &t.ErrorMessage, &t.TargetArtifactReleaseID,
+			&t.ClusterRuntimeID, &t.RequesterAccountID, &t.OrganizationID, &t.PreviousPipelineID,
 		); err != nil {
 			return nil, err
 		}

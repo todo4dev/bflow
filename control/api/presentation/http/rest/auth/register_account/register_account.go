@@ -1,4 +1,4 @@
-// presentation/http/resource/auth/register_account/route.go
+// presentation/http/rest/auth/register_account/route.go
 package register_account
 
 import (
@@ -17,8 +17,7 @@ func handler(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusUnprocessableEntity)
 	}
 
-	_, err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data)
-	if err != nil {
+	if err := di.Resolve[*usecase.Handler]().Handle(c.Context(), &data); err != nil {
 		return err
 	}
 

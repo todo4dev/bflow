@@ -10,21 +10,21 @@ import (
 )
 
 type Pipeline struct {
-	ID                 uuid.UUID           `json:"id"`
-	TS                 time.Time           `json:"ts"`
-	CreatedAt          time.Time           `json:"created_at"`
-	DeletedAt          *time.Time          `json:"deleted_at"`
-	Kind               enum.PipelineKind   `json:"kind"`
-	Status             enum.PipelineStatus `json:"status"`
-	Payload            *json.RawMessage    `json:"payload"`
-	StartedAt          *time.Time          `json:"started_at"`
-	FinishedAt         *time.Time          `json:"finished_at"`
-	ErrorMessage       *string             `json:"error_message"`
-	TargetReleaseID    *uuid.UUID          `json:"target_release_id"`
-	RuntimeID          uuid.UUID           `json:"runtime_id"`
-	RequesterAccountID uuid.UUID           `json:"requester_account_id"`
-	OrganizationID     uuid.UUID           `json:"organization_id"`
-	PreviousPipelineID *uuid.UUID          `json:"previous_pipeline_id"`
+	ID                      uuid.UUID           `json:"id"`
+	TS                      time.Time           `json:"ts"`
+	CreatedAt               time.Time           `json:"created_at"`
+	DeletedAt               *time.Time          `json:"deleted_at"`
+	Kind                    enum.PipelineKind   `json:"kind"`
+	Status                  enum.PipelineStatus `json:"status"`
+	Payload                 *json.RawMessage    `json:"payload"`
+	StartedAt               *time.Time          `json:"started_at"`
+	FinishedAt              *time.Time          `json:"finished_at"`
+	ErrorMessage            *string             `json:"error_message"`
+	TargetArtifactReleaseID *uuid.UUID          `json:"target_artifact_release_id"`
+	ClusterRuntimeID        uuid.UUID           `json:"cluster_runtime_id"`
+	RequesterAccountID      uuid.UUID           `json:"requester_account_id"`
+	OrganizationID          uuid.UUID           `json:"organization_id"`
+	PreviousPipelineID      *uuid.UUID          `json:"previous_pipeline_id"`
 }
 
 var _ json.Marshaler = (*Pipeline)(nil)
@@ -39,4 +39,3 @@ func (e *Pipeline) UnmarshalJSON(data []byte) error {
 	type Alias Pipeline
 	return json.Unmarshal(data, (*Alias)(e))
 }
-
