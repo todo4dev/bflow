@@ -27,7 +27,7 @@ var Route = server.
 		return c.Status(fiber.StatusOK).JSON(result)
 	}).
 	Operation(func(o *oas.Operation) {
-		o.Tags("Auth").Summary("Login Using Internal Code").
+		o.Tags("Auth").Summary("Login Using Code").
 			Description("Authenticate using an encrypted code received from SSO callback.")
 		server.BodyJson(o, server.SchemaAs[usecase.Data]())
 		server.ResponseStatus(o, fiber.StatusOK, "Login Result", server.SchemaAs[usecase.Result]())
