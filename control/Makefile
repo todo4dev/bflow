@@ -4,7 +4,7 @@ DC_FILE            ?= compose.yml
 COMPOSE            ?= docker compose
 PROJECT_NAME       ?= $(or $(COMPOSE_PROJECT_NAME),control)
 E2E_DIR            = e2e
-ROBOT_RESULTS_DIR  = ../.robot/results
+ROBOT_RESULTS_DIR  = .robot
 
 .PHONY: help docker-up-d docker-down e2e-install e2e-test e2e-wait test
 

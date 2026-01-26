@@ -3,10 +3,10 @@ package application
 
 import (
 	"src/application/auth"
-	"src/application/system"
+	"src/application/health"
 )
 
 func Provide() {
 	auth.Provide()
-	system.Provide()
+	health.Provide()
 }

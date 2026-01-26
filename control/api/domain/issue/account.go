@@ -53,3 +53,9 @@ type AccountSessionExpired struct{}
 func (e *AccountSessionExpired) Error() string {
 	return "Account session expired"
 }
+
+type AccountInvalidSSOCallback struct{}
+
+func (e *AccountInvalidSSOCallback) Error() string {
+	return "Account invalid SSO callback"
+}

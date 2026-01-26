@@ -5,22 +5,22 @@ import (
 	"src/application/auth/activate_account"
 	"src/application/auth/check_email_available"
 	"src/application/auth/login_using_credential"
-	"src/application/auth/refresh_authorization_token"
+	"src/application/auth/refresh_token"
 	"src/application/auth/register_account"
 	"src/application/auth/resend_activation_code"
 	"src/application/auth/reset_password"
 	"src/application/auth/send_reset_password"
-
-	"github.com/leandroluk/gox/di"
+	"src/application/auth/sso_provider_redirect"
 )
 
 func Provide() {
-	di.SingletonAs[*activate_account.Handler](activate_account.New)
-	di.SingletonAs[*check_email_available.Handler](check_email_available.New)
-	di.SingletonAs[*login_using_credential.Handler](login_using_credential.New)
-	di.SingletonAs[*refresh_authorization_token.Handler](refresh_authorization_token.New)
-	di.SingletonAs[*register_account.Handler](register_account.New)
-	di.SingletonAs[*resend_activation_code.Handler](resend_activation_code.New)
-	di.SingletonAs[*reset_password.Handler](reset_password.New)
-	di.SingletonAs[*send_reset_password.Handler](send_reset_password.New)
+	activate_account.Provide()
+	check_email_available.Provide()
+	login_using_credential.Provide()
+	refresh_token.Provide()
+	register_account.Provide()
+	resend_activation_code.Provide()
+	reset_password.Provide()
+	send_reset_password.Provide()
+	sso_provider_redirect.Provide()
 }

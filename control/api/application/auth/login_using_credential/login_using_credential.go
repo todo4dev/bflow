@@ -12,25 +12,31 @@ import (
 	"src/domain/repository"
 	"src/port/cache"
 	"src/port/jwt"
-	"src/port/logging"
+	"src/port/logger"
 	"src/port/mailing"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/util"
 	"github.com/leandroluk/gox/validate"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
+	s.Field(&t.Email).Text().Required().Email()
+	s.Field(&t.Password).Text().Required()
+})
+
 type Data struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
-	s.Field(&t.Email).Text().Required().Email()
-	s.Field(&t.Password).Text().Required()
-})
+func (d *Data) Validate() error {
+	_, err := dataSchema.Validate(d)
+	return err
+}
 
 type Result struct {
 	TokenType    string `json:"token_type"`
@@ -46,7 +52,7 @@ type Handler struct {
 	jwtProvider                 jwt.Provider
 	cacheClient                 cache.Client
 	mailingMailer               mailing.Mailer
-	loggingLogger               logging.Logger
+	loggerClient                logger.Client
 }
 
 func New(
@@ -56,7 +62,7 @@ func New(
 	jwtProvider jwt.Provider,
 	cacheClient cache.Client,
 	mailingMailer mailing.Mailer,
-	loggingLogger logging.Logger,
+	loggerClient logger.Client,
 ) *Handler {
 	return &Handler{
 		repositoryAccount:           repositoryAccount,
@@ -65,7 +71,7 @@ func New(
 		jwtProvider:                 jwtProvider,
 		cacheClient:                 cacheClient,
 		mailingMailer:               mailingMailer,
-		loggingLogger:               loggingLogger,
+		loggerClient:                loggerClient,
 	}
 }
 
@@ -132,7 +138,7 @@ func (h *Handler) sendActivationEmail(account *entity.Account, otp string) {
 		})
 		if err != nil {
 			msg := fmt.Sprintf("failed to send activation email to %s", account.Email)
-			h.loggingLogger.Error(ctx, msg, err)
+			h.loggerClient.Error(ctx, msg, err)
 		}
 	}()
 }
@@ -170,7 +176,7 @@ func (h *Handler) createJwt(sessionID string, account *entity.Account, profile *
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) (*Result, error) {
-	if _, err := dataSchema.Validate(*data); err != nil {
+	if err := data.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -245,4 +251,8 @@ func init() {
 		meta.Field(&result.RefreshToken, meta.Description("Refresh token")),
 		meta.Field(&result.ExpiresIn, meta.Description("Expires in")),
 		meta.Example(result))
+}
+
+func Provide() {
+	di.SingletonAs[*Handler](New)
 }

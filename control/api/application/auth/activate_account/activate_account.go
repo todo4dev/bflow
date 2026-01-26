@@ -12,26 +12,32 @@ import (
 	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
-	"src/port/logging"
+	"src/port/logger"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
-
-type Data struct {
-	Email string `json:"email"`
-	OTP   string `json:"otp"`
-}
 
 var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 	s.Field(&t.Email).Text().Required()
 	s.Field(&t.OTP).Text().Required()
 })
 
+type Data struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
+}
+
+func (d *Data) Validate() error {
+	_, err := dataSchema.Validate(d)
+	return err
+}
+
 type Handler struct {
 	repositoryAccount repository.Account
-	loggingLogger     logging.Logger
+	loggerClient      logger.Client
 	brokerPublisher   broker.Client
 	cacheClient       cache.Client
 }
@@ -39,13 +45,13 @@ type Handler struct {
 func New(
 	repositoryAccount repository.Account,
 	cacheClient cache.Client,
-	loggingLogger logging.Logger,
+	loggerClient logger.Client,
 	brokerPublisher broker.Client,
 ) *Handler {
 	return &Handler{
 		repositoryAccount: repositoryAccount,
 		cacheClient:       cacheClient,
-		loggingLogger:     loggingLogger,
+		loggerClient:      loggerClient,
 		brokerPublisher:   brokerPublisher,
 	}
 }
@@ -92,7 +98,7 @@ func (h *Handler) deleteKey(key string) {
 	go func() {
 		ctx := context.Background()
 		if err := h.cacheClient.Delete(ctx, key); err != nil {
-			h.loggingLogger.Error(ctx, "failed to delete key", err)
+			h.loggerClient.Error(ctx, "failed to delete key", err)
 		}
 	}()
 }
@@ -101,13 +107,13 @@ func (h *Handler) publishAccountActivated(accountID uuid.UUID) {
 	go func() {
 		ctx := context.Background()
 		if err := h.brokerPublisher.Publish(ctx, event.AccountActivated(accountID)); err != nil {
-			h.loggingLogger.Error(ctx, "failed to publish message", err)
+			h.loggerClient.Error(ctx, "failed to publish message", err)
 		}
 	}()
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) error {
-	if _, err := dataSchema.Validate(*data); err != nil {
+	if err := data.Validate(); err != nil {
 		return err
 	}
 
@@ -144,4 +150,8 @@ func init() {
 	meta.Describe(&Handler{}, meta.Description("Activating account usecase"),
 		meta.Throws[*issue.AccountInvalidOTP](),
 		meta.Throws[*issue.AccountNotFound]())
+}
+
+func Provide() {
+	di.SingletonAs[*Handler](New)
 }

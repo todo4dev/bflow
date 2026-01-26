@@ -1,14 +1,16 @@
-// main.go
 package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"src/application"
-	"src/application/system/healthcheck"
 	"src/infrastructure"
-	"src/presentation/http"
+	"src/presentation"
+	"src/presentation/http/server"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/leandroluk/gox/di"
@@ -24,13 +26,24 @@ func main() {
 
 	infrastructure.Provide()
 	application.Provide()
+	presentation.Provide()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	app := di.Resolve[*server.Server]()
 
-	util.Must(di.Resolve[*healthcheck.Handler]().Handle(ctx))
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- app.Listen()
+	}()
 
-	if err := http.NewServer().Listen(); err != nil {
-		panic(err)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
+		util.Check(err)
+	case <-stop:
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		util.Check(app.Shutdown(ctx))
 	}
 }

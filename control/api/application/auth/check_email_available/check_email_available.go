@@ -7,6 +7,7 @@ import (
 	"src/domain/issue"
 	"src/domain/repository"
 
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
@@ -17,6 +18,11 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 
 type Data struct {
 	Email string `json:"email"`
+}
+
+func (d *Data) Validate() error {
+	_, err := dataSchema.Validate(d)
+	return err
 }
 
 type Handler struct {
@@ -43,7 +49,7 @@ func (h *Handler) checkEmailInUse(email string) error {
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) error {
-	if _, err := dataSchema.Validate(data); err != nil {
+	if err := data.Validate(); err != nil {
 		return err
 	}
 	return h.checkEmailInUse(data.Email)
@@ -55,6 +61,11 @@ func init() {
 	meta.Describe(&data, meta.Description("Data for checking email availability"),
 		meta.Field(&data.Email, meta.Description("Email to check")),
 		meta.Example(data))
+
 	meta.Describe(&Handler{}, meta.Description("Handler for checking email availability"),
 		meta.Throws[*issue.AccountEmailInUse]())
+}
+
+func Provide() {
+	di.SingletonAs[*Handler](New)
 }

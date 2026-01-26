@@ -13,19 +13,14 @@ import (
 	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
-	"src/port/logging"
+	"src/port/logger"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type Data struct {
-	OTP         string `json:"otp"`
-	Email       string `json:"email"`
-	NewPassword string `json:"new_password"`
-}
 
 var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 	s.Field(&t.OTP).Text().Required().Min(6).Max(6)
@@ -33,11 +28,22 @@ var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 	s.Field(&t.NewPassword).Text().Required().Pattern(constant.ACCOUNT_CREDENTIAL_PASSWORD_REGEX)
 })
 
+type Data struct {
+	OTP         string `json:"otp"`
+	Email       string `json:"email"`
+	NewPassword string `json:"new_password"`
+}
+
+func (d *Data) Validate() error {
+	_, err := dataSchema.Validate(d)
+	return err
+}
+
 type Handler struct {
 	repositoryAccount           repository.Account
 	repositoryAccountCredential repository.AccountCredential
 	domainUow                   domain.Uow
-	loggingLogger               logging.Logger
+	loggerClient                logger.Client
 	brokerPublisher             broker.Client
 	cacheClient                 cache.Client
 }
@@ -45,14 +51,14 @@ type Handler struct {
 func New(
 	repositoryAccount repository.Account,
 	repositoryAccountCredential repository.AccountCredential,
-	loggingLogger logging.Logger,
+	loggerClient logger.Client,
 	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
 		repositoryAccount:           repositoryAccount,
 		repositoryAccountCredential: repositoryAccountCredential,
-		loggingLogger:               loggingLogger,
+		loggerClient:                loggerClient,
 		brokerPublisher:             brokerPublisher,
 		cacheClient:                 cacheClient,
 	}
@@ -124,13 +130,13 @@ func (h *Handler) publishAccountCredentialChanged(accountID uuid.UUID) {
 		event := event.AccountCredentialChanged(accountID)
 		if err := h.brokerPublisher.Publish(ctx, event); err != nil {
 			msg := fmt.Sprintf("failed to publish AccountCredentialChanged event to %s", accountID.String())
-			h.loggingLogger.Error(ctx, msg, err)
+			h.loggerClient.Error(ctx, msg, err)
 		}
 	}()
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) error {
-	if _, err := dataSchema.Validate(*data); err != nil {
+	if err := data.Validate(); err != nil {
 		return err
 	}
 
@@ -168,4 +174,8 @@ func init() {
 	meta.Describe(&Handler{}, meta.Description("Handler for resetting user password"),
 		meta.Throws[*issue.AccountNotFound](),
 		meta.Throws[*issue.AccountInvalidOTP]())
+}
+
+func Provide() {
+	di.SingletonAs[*Handler](New)
 }

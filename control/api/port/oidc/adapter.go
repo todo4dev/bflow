@@ -8,12 +8,11 @@ import (
 
 // Claims OIDC ID token claims
 type Claims struct {
-	Subject       string
-	Email         string
-	EmailVerified bool
-	Name          string
-	Picture       string
-	Custom        map[string]any
+	Subject    string
+	Email      string
+	GivenName  string
+	FamilyName string
+	Custom     map[string]any
 }
 
 // Tokens tokens returned by OIDC
@@ -27,7 +26,7 @@ type Tokens struct {
 // Adapter authenticates via OIDC (OpenID Connect)
 type Adapter interface {
 	// GetAuthURL returns authentication URL
-	GetAuthURL(state string, scopes []string) string
+	GetAuthURL(state map[string]any) string
 
 	// Exchange exchanges code for tokens
 	Exchange(ctx context.Context, code string) (*Tokens, error)
@@ -40,6 +39,12 @@ type Adapter interface {
 
 	// GetPicture returns user picture
 	GetPicture(ctx context.Context, accessToken string) (io.ReadCloser, error)
+
+	// EncodeState encodes state to be used in the authentication URL
+	EncodeState(state map[string]any) string
+
+	// DecodeState decodes state from the authentication URL
+	DecodeState(base64State string) (map[string]any, error)
 }
 
 // ProviderName represents an OIDC provider

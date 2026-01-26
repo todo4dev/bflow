@@ -11,26 +11,32 @@ import (
 	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
-	"src/port/logging"
+	"src/port/logger"
 	"src/port/mailing"
 
 	"github.com/google/uuid"
+	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/meta"
 	"github.com/leandroluk/gox/validate"
 )
-
-type Data struct {
-	Email string `json:"email"`
-}
 
 var dataSchema = validate.Object(func(t *Data, s *validate.ObjectSchema[Data]) {
 	s.Field(&t.Email).Text().Required().Email()
 })
 
+type Data struct {
+	Email string `json:"email"`
+}
+
+func (d *Data) Validate() error {
+	_, err := dataSchema.Validate(d)
+	return err
+}
+
 type Handler struct {
 	repositoryAccount repository.Account
 	mailingMailer     mailing.Mailer
-	loggingLogger     logging.Logger
+	loggerClient      logger.Client
 	brokerPublisher   broker.Client
 	cacheClient       cache.Client
 }
@@ -38,14 +44,14 @@ type Handler struct {
 func New(
 	repositoryAccount repository.Account,
 	mailingMailer mailing.Mailer,
-	loggingLogger logging.Logger,
+	loggerClient logger.Client,
 	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
 		repositoryAccount: repositoryAccount,
 		mailingMailer:     mailingMailer,
-		loggingLogger:     loggingLogger,
+		loggerClient:      loggerClient,
 		brokerPublisher:   brokerPublisher,
 		cacheClient:       cacheClient,
 	}
@@ -84,7 +90,7 @@ func (h *Handler) sendActivationEmail(otp string, email string) {
 			Variables: map[string]any{"otp": otp}})
 		if err != nil {
 			msg := fmt.Sprintf("failed to send activation email to %s", email)
-			h.loggingLogger.Error(ctx, msg, err)
+			h.loggerClient.Error(ctx, msg, err)
 		}
 	}()
 }
@@ -94,13 +100,13 @@ func (h *Handler) publishAccountActivated(accountID uuid.UUID) {
 		event := event.AccountActivated(accountID)
 		if err := h.brokerPublisher.Publish(context.Background(), event); err != nil {
 			msg := fmt.Sprintf("failed to publish AccountActivated event to %s", accountID.String())
-			h.loggingLogger.Error(context.Background(), msg, err)
+			h.loggerClient.Error(context.Background(), msg, err)
 		}
 	}()
 }
 
 func (h *Handler) Handle(ctx context.Context, data *Data) error {
-	if _, err := dataSchema.Validate(*data); err != nil {
+	if err := data.Validate(); err != nil {
 		return err
 	}
 
@@ -131,4 +137,8 @@ func init() {
 	meta.Describe(&Handler{}, meta.Description("Handler for resending activation code"),
 		meta.Throws[*issue.AccountNotFound](),
 		meta.Throws[*issue.AccountAlreadyActivated]())
+}
+
+func Provide() {
+	di.SingletonAs[*Handler](New)
 }

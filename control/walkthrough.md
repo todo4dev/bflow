@@ -17,8 +17,8 @@ I have implemented the **Refresh Authorization Token** use case (Case 2.8).
 - **[MODIFY]** `application/auth/auth.go`: Registered the new handler in the DI container.
 
 ### Presentation Layer
-- **[NEW]** `presentation/http/rest/auth/refresh_authorization_token/refresh_authorization_token.go`: HTTP Handler and OpenAPI definition.
-- **[MODIFY]** `presentation/http/rest/auth/auth.go`: Registered `POST /auth/refresh` route.
+- **[NEW]** `presentation/http/route/auth/refresh_authorization_token/refresh_authorization_token.go`: HTTP Handler and OpenAPI definition.
+- **[MODIFY]** `presentation/http/route/auth/auth.go`: Registered `POST /auth/refresh` route.
 
 ## Verification
 

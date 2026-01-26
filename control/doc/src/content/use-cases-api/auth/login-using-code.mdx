@@ -1,0 +1,81 @@
+---
+title: Login using internal code
+---
+
+# Login using internal code
+
+Authenticates a user using an encrypted internal code obtained from the SSO callback workflow, returning a JWT token pair (access and refresh) for session management.
+
+## Description
+
+This endpoint exchanges the encrypted `code` (received via the SSO callback redirect) for a session token. It decrypts the code, validates the account status, creates a session, and returns authentication tokens.
+
+## Rules
+
+-   **Code Validation**: Verify if the `code` is valid (decryptable) and not expired (TTL).
+-   **Account Status**: The account associated with the code must exist and not be deleted (deactivated).
+-   **Session Creation**: On success, a new session is created and a JWT access token and refresh token are returned.
+
+## Request
+
+- **Method:** `POST`
+- **Path:** `/auth/login/code`
+- **Body:** `application/json`
+
+| Field | Type   | Required | Description                                   |
+| ----- | ------ | -------- | --------------------------------------------- |
+| code  | string | Yes      | The encrypted code received from SSO callback |
+
+### Example
+
+```json
+{
+  "code": "encrypted_code_string"
+}
+```
+
+## Success Case
+
+**Condition:** valid code, account is active.
+
+- **HTTP Status:** `200 OK`
+- **Response Body:**
+
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "expires_in": 900
+}
+```
+
+## Error Cases
+
+### Unauthorized
+
+**Condition:** The provided code is invalid, expired, or cannot be decrypted.
+
+- **HTTP Status:** `401 Unauthorized`
+- **Response Body:**
+
+```json
+{
+  "name": "AccountInvalidCredentials",
+  "message": "The provided code is invalid or expired"
+}
+```
+
+### Account Deactivated
+
+**Condition:** The account associated with the code has been deactivated.
+
+- **HTTP Status:** `406 Not Acceptable`
+- **Response Body:**
+
+```json
+{
+  "name": "AccountDeactivated",
+  "message": "Account is deactivated"
+}
+```

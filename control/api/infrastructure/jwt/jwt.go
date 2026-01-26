@@ -3,37 +3,16 @@ package jwt
 
 import (
 	"fmt"
-	"src/infrastructure/jwt/golang_jwt"
-	"src/port/jwt"
-	"time"
+	"src/infrastructure/jwt/jose"
 
-	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/env"
 )
 
 func Provide() {
-	provider := env.Get("API_JWT_PROVIDER", "golang_jwt")
+	provider := env.Get("API_JWT_PROVIDER", "jose")
 	switch provider {
-	case "golang_jwt":
-		config := golang_jwt.Config{
-			Algorithm:  env.Get("API_JWT_ALGORITHM", "HS256"),
-			Issuer:     env.Get("API_JWT_ISSUER", "bflow"),
-			Audience:   env.Get("API_JWT_AUDIENCE", "bflow-api"),
-			PrivateKey: env.Get("API_JWT_PRIVATE_KEY", "secret-key"),
-			PublicKey:  env.Get("API_JWT_PUBLIC_KEY", "secret-key"),
-			AccessTTL:  time.Duration(env.Get("API_JWT_ACCESS_TTL_SECONDS", 900)) * time.Second,
-			RefreshTTL: time.Duration(env.Get("API_JWT_REFRESH_TTL_SECONDS", 86400)) * time.Second,
-		}
-		if err := config.Validate(); err != nil {
-			panic(fmt.Errorf("jwt config validation failed: %w", err))
-		}
-
-		instance, err := golang_jwt.NewProvider(&config)
-		if err != nil {
-			panic(fmt.Errorf("failed to create jwt provider: %w", err))
-		}
-
-		di.SingletonAs[jwt.Provider](func() jwt.Provider { return instance })
+	case "jose":
+		jose.Provide()
 	default:
 		panic(fmt.Errorf("invalid 'API_JWT_PROVIDER': %s", provider))
 	}

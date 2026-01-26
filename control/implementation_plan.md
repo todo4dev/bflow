@@ -1,57 +1,55 @@
-# Implementation Plan - Refresh Authorization Token
+# Implementation Plan - SSO Provider Redirect
 
 ## User Review Required
 
 > [!IMPORTANT]
-> Verify if `src/port/jwt` exposes a method to parse/validate the refresh token and extract claims (jti) without full verification if we rely on cache, or if we should verify signature first. The plan assumes `jwtProvider` has a method to parse/verify.
+> - Ensure `API_OIDC_*` environment variables are set.
+> - Callback URL is passed as a query parameter.
+> - Route is `GET /auth/:provider`.
+> - **Behavior Change**: Redirects (302) to the provider URL instead of returning it in body.
 
 ## Proposed Changes
 
 ### Documentation
 
-#### [NEW] [refresh-authorization-token.mdx](file:///c:/dev/todo4dev/bflow/control/doc/src/content/use-cases-api/auth/refresh-authorization-token.mdx)
+#### [NEW] [sso-provider-redirect.mdx](file:///c:/dev/todo4dev/bflow/control/doc/src/content/use-cases-api/auth/sso-provider-redirect.mdx)
+- Create documentation for the `SSO Provider Redirect` use case.
+- Defines `GET /auth/:provider?callback_url=...` with 302 Redirect response.
 
 ### Application Layer (Auth Domain)
 
-#### [NEW] [refresh_authorization_token.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/refresh_authorization_token/refresh_authorization_token.go)
-- Implement `Handler` struct with dependencies:
-    - `repository.Account` (to check if active)
-    - `jwt.Provider` (to parse and create tokens)
-    - `cache.Client` (to validate and update session)
-- Implement `Data` struct:
-    - `RefreshToken` (string, required)
-- Implement `Result` struct:
-    - `TokenType`
-    - `AccessToken`
-    - `RefreshToken`
-    - `ExpiresIn`
-- Implement `Handle` method:
-    1.  Validate input.
-    2.  Parse `RefreshToken` to get `jti` (session ID). Handle invalid token error.
-    3.  Check cache for `key := fmt.Sprintf("account:%s:session:%s", accountId, jti)`. If missing -> 401.
-    4.  Parse cache value to get `maxAge`. If `maxAge < now` -> delete cache, return 401.
-    5.  Check account status (active). If not -> 401.
-    6.  Generate new JWT pair (Access + Refresh) using same `jti`.
-    7.  Update session in cache with new expiration (Access Token TTL).
-    8.  Return new tokens.
+#### [NEW] [sso_provider_redirect.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/sso/sso_provider_redirect/sso_provider_redirect.go)
+- **Data (Input)**:
+    - `Provider` (string, required, oneof=google microsoft) - from Path
+    - `CallbackURL` (string, required, url) - from Query
+- **Result (Output)**:
+    - `RedirectURL` (string)
+- **Handler**:
+    - Validate input using `gox/validate`.
+    - Retrieve `oidc.Adapter` for the given provider.
+    - Call `adapter.GetAuthURL(state=Data.CallbackURL, scopes=[openid, profile, email])`.
+    - Return `Result{RedirectURL: url}`.
 
-#### [MODIFY] [usecase.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/usecase.go)
-- Register `refresh_authorization_token` handler.
+#### [MODIFY] [auth.go](file:///c:/dev/todo4dev/bflow/control/api/application/auth/auth.go)
+- Register the new handler in `func Provide()`.
 
 ### Presentation Layer (HTTP)
 
-#### [MODIFY] [router.go](file:///c:/dev/todo4dev/bflow/control/api/presentation/http/router/router.go) (or similar)
-- Register `POST /auth/refresh` route mapping to the new handler.
+#### [NEW] [sso_provider_redirect.go](file:///c:/dev/todo4dev/bflow/control/api/presentation/http/route/auth/sso_provider_redirect/sso_provider_redirect.go)
+- Create the REST handler.
+- Map HTTP Path param `:provider` to `Data.Provider`.
+- Map HTTP Query param `callback_url` to `Data.CallbackURL`.
+- Invoke Application Handler.
+- **Return 302 Found** assuming success, setting `Location` header to `Result.RedirectURL`.
+
+#### [MODIFY] [router.go](file:///c:/dev/todo4dev/bflow/control/api/presentation/http/router/router.go)
+- Register `GET /auth/:provider` route.
 
 ## Verification Plan
 
 ### Automated Tests
-- Since I cannot run full integration tests easily without setup, I will rely on manual verification or unit tests if possible.
-- I will attempt to run the server and hit the endpoint with curl.
+- Unit test for `Handler` mocking `oidc.Provider`.
 
 ### Manual Verification
-1.  **Login**: Call `POST /auth/login` to get `access_token` and `refresh_token`.
-2.  **Refresh Success**: Call `POST /auth/refresh` with the valid `refresh_token`. Expect 200 and new tokens.
-3.  **Refresh Invalid**: Call with invalid string. Expect 401 or 400.
-4.  **Refresh Expired**: (Hard to simulate without waiting or mocking time/cache).
-5.  **Account Disabled**: (Requires modifying DB, might skip for quick check).
+- Open in Browser: `http://localhost:30000/auth/google?callback_url=http://localhost:3000`.
+- Verify browser redirects to Google Login.

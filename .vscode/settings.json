@@ -124,7 +124,7 @@
   },
   // #endregion
   // #region robot
-  "robotcode.robot.outputDir": "${workspaceFolder}/.robot/results",
+  "robotcode.robot.outputDir": "${workspaceFolder}/.robot",
   "[robotframework]": {
     "editor.wordBasedSuggestions": "off",
     "editor.semanticHighlighting.enabled": true,
