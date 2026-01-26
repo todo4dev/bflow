@@ -3,11 +3,13 @@ package login_using_code
 
 import (
 	usecase "src/application/auth/login_using_code"
+	"src/domain/issue"
 	"src/presentation/http/server"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/leandroluk/gox/di"
 	"github.com/leandroluk/gox/oas"
+	"github.com/leandroluk/gox/validate"
 )
 
 var Route = server.
@@ -29,4 +31,7 @@ var Route = server.
 			Description("Authenticate using an encrypted code received from SSO callback.")
 		server.BodyJson(o, server.SchemaAs[usecase.Data]())
 		server.ResponseStatus(o, fiber.StatusOK, "Login Result", server.SchemaAs[usecase.Result]())
+		server.ResponseIssueAs[*issue.AccountInvalidCredentials](o, fiber.StatusUnauthorized)
+		server.ResponseIssueAs[*issue.AccountDeactivated](o, fiber.StatusNotAcceptable)
+		server.ResponseIssueAs[*validate.ValidationError](o, fiber.StatusUnprocessableEntity)
 	})
