@@ -14,16 +14,16 @@ type Context struct {
 
 type Handler func(*Context) error
 
-type Route struct {
+type RouteType struct {
 	handlers  []Handler
 	operation func(*oas.Operation)
 }
 
-func NewRoute(handlers ...Handler) *Route {
-	return &Route{handlers: handlers}
+func Route(handlers ...Handler) *RouteType {
+	return &RouteType{handlers: handlers}
 }
 
-func (d *Route) Operation(spec func(*oas.Operation)) *Route {
+func (d *RouteType) Operation(spec func(*oas.Operation)) *RouteType {
 	d.operation = spec
 	return d
 }

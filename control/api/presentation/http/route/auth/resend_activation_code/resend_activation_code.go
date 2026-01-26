@@ -12,7 +12,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		var data usecase.Data
 		if err := c.BodyParser(&data); err != nil {
 			return c.SendStatus(fiber.StatusUnprocessableEntity)

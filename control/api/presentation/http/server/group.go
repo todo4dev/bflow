@@ -1,11 +1,11 @@
 // presentation/http/server/group_definition.go
 package server
 
-type Group struct {
+type GroupType struct {
 	Path    string
 	Factory func(*Grouper)
 }
 
-func NewGroup(path string, factory func(*Grouper)) Group {
-	return Group{Path: path, Factory: factory}
+func Group(path string, factory func(*Grouper)) GroupType {
+	return GroupType{Path: path, Factory: factory}
 }

@@ -17,7 +17,7 @@ import (
 )
 
 var Group = server.
-	NewGroup("/auth", func(gr *server.Grouper) {
+	Group("/auth", func(gr *server.Grouper) {
 		gr.Patch("/activate", activate_account.Route)
 		gr.Post("/activate", resend_activation_code.Route)
 		gr.Get("/check/email/:email", check_email_available.Route)

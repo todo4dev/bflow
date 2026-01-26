@@ -9,7 +9,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		if c.Router == nil {
 			return fiber.NewError(fiber.StatusServiceUnavailable, "Router not initialized")
 		}

@@ -16,7 +16,7 @@ type Router struct {
 	Config   *Config
 }
 
-func (r *Router) Group(def Group) *Router {
+func (r *Router) Group(def GroupType) *Router {
 	fullPath := r.path + def.Path
 	if !strings.HasPrefix(fullPath, "/") {
 		fullPath = "/" + fullPath
@@ -64,43 +64,43 @@ func (r *Router) wrapHandlers(handlers []Handler) []fiber.Handler {
 	return fiberHandlers
 }
 
-func (r *Router) Get(path string, route *Route) *Router {
+func (r *Router) Get(path string, route *RouteType) *Router {
 	r.fiber.Get(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "GET", route.operation)
 	return r
 }
 
-func (r *Router) Post(path string, route *Route) *Router {
+func (r *Router) Post(path string, route *RouteType) *Router {
 	r.fiber.Post(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "POST", route.operation)
 	return r
 }
 
-func (r *Router) Put(path string, route *Route) *Router {
+func (r *Router) Put(path string, route *RouteType) *Router {
 	r.fiber.Put(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "PUT", route.operation)
 	return r
 }
 
-func (r *Router) Patch(path string, route *Route) *Router {
+func (r *Router) Patch(path string, route *RouteType) *Router {
 	r.fiber.Patch(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "PATCH", route.operation)
 	return r
 }
 
-func (r *Router) Delete(path string, route *Route) *Router {
+func (r *Router) Delete(path string, route *RouteType) *Router {
 	r.fiber.Delete(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "DELETE", route.operation)
 	return r
 }
 
-func (r *Router) Options(path string, route *Route) *Router {
+func (r *Router) Options(path string, route *RouteType) *Router {
 	r.fiber.Options(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "OPTIONS", route.operation)
 	return r
 }
 
-func (r *Router) Head(path string, route *Route) *Router {
+func (r *Router) Head(path string, route *RouteType) *Router {
 	r.fiber.Head(path, r.wrapHandlers(route.handlers)...)
 	r.addSpec(path, "HEAD", route.operation)
 	return r

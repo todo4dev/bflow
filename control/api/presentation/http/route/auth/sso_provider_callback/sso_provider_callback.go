@@ -11,7 +11,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		provider := c.Params("provider")
 		code := c.Query("code")
 		state := c.Query("state")

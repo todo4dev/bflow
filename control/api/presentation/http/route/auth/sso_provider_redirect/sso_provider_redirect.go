@@ -12,7 +12,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		callbackURL, err := url.QueryUnescape(c.Query("callback_url"))
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnprocessableEntity, "invalid query parameter")

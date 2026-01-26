@@ -7,7 +7,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		html := fmt.Sprintf(`
 		<!DOCTYPE html>
 		<html>

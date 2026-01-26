@@ -19,7 +19,7 @@ type Server struct {
 	router *Router
 }
 
-func New(logger logger.Client, config *Config, group Group) *Server {
+func New(logger logger.Client, config *Config, group GroupType) *Server {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 		ErrorHandler:          middleware.ErrorHandler(),
@@ -54,7 +54,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.app.ShutdownWithContext(ctx)
 }
 
-func Provide(group Group) {
+func Provide(group GroupType) {
 	config, err := configSchema.Validate(Config{
 		AppName:             env.Get("API_NAME", "App Name"),
 		AppPort:             env.Get("API_PORT", "30000"),

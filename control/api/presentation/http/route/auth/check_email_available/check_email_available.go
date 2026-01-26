@@ -14,7 +14,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		email, err := url.QueryUnescape(c.Params("email"))
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnprocessableEntity, "invalid query parameter")

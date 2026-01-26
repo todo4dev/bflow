@@ -10,7 +10,7 @@ import (
 )
 
 var Group = server.
-	NewGroup("/", func(g *server.Grouper) {
+	Group("/", func(g *server.Grouper) {
 		g.Group(auth.Group)
 		g.Get(g.Config.GetOpenAPIPath(), openapi_ui.Route)
 		g.Get(g.Config.GetOpenAPIJsonPath(), openapi_json.Route)

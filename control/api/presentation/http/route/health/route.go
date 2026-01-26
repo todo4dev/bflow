@@ -11,7 +11,7 @@ import (
 )
 
 var Route = server.
-	NewRoute(func(c *server.Context) error {
+	Route(func(c *server.Context) error {
 		result, err := di.Resolve[*health.Handler]().Handle()
 		if err != nil {
 			return fiber.NewError(fiber.StatusServiceUnavailable, err.Error())
