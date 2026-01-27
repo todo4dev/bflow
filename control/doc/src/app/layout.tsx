@@ -1,15 +1,16 @@
-import {Footer, Layout, Navbar} from 'nextra-theme-docs'
-import 'nextra-theme-docs/style.css'
-import {Head} from 'nextra/components'
-import {getPageMap} from 'nextra/page-map'
+// src/app/layout.tsx
+import './globals.css';
 
-export const metadata = {
-  // seu metadata aqui (Next Metadata API)
-}
+import {Footer, Layout, Navbar} from 'nextra-theme-docs';
+import 'nextra-theme-docs/style.css';
+import {Head} from 'nextra/components';
+import {getPageMap} from 'nextra/page-map';
 
-const navbar = <Navbar logo={<b>BFlow</b>} />
+export const metadata = {};
 
-const footer = <Footer>MIT {new Date().getFullYear()} © BFlow.</Footer>
+const navbar = <Navbar logo={<b>BFlow</b>} />;
+
+const footer = <Footer>MIT {new Date().getFullYear()} © BFlow.</Footer>;
 
 export default async function RootLayout({children}: {children: React.ReactNode}) {
   return (
@@ -27,5 +28,5 @@ export default async function RootLayout({children}: {children: React.ReactNode}
         </Layout>
       </body>
     </html>
-  )
+  );
 }

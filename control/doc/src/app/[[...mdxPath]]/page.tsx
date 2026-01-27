@@ -1,27 +1,24 @@
-import {generateStaticParamsFor, importPage} from 'nextra/pages'
-import {useMDXComponents as getMDXComponents} from '../../mdx-components'
+// src/app/[...mdxPath]/page.tsx
+import {generateStaticParamsFor, importPage} from 'nextra/pages';
+import {useMDXComponents as getMDXComponents} from '../../mdx-components';
 
-export const generateStaticParams = generateStaticParamsFor('mdxPath')
+export const generateStaticParams = generateStaticParamsFor('mdxPath');
 
-type PageProps = {
-  params: Promise<{mdxPath?: string[]}>
-  [key: string]: unknown
-}
+export default async function Page(props: {params: Promise<{mdxPath?: string[]}>}) {
+  // 1. RESOLVE a Promise do params (Obrigatório no Next.js 15+)
+  const {mdxPath = []} = await props.params;
 
-export async function generateMetadata({params}: PageProps) {
-  const {mdxPath = []} = await params
-  const {metadata} = await importPage(mdxPath)
-  return metadata
-}
+  // 2. Importa a página com o caminho garantido
+  const {default: MDXContent, ...wrapperProps} = await importPage(mdxPath);
 
-const Wrapper = getMDXComponents().wrapper
+  // 3. Pega os seus componentes customizados
+  const components = getMDXComponents({});
+  const Wrapper = components.wrapper;
 
-export default async function Page({params, ...props}: PageProps) {
-  const {mdxPath = []} = await params
-  const {default: MDXContent, ...wrapperProps} = await importPage(mdxPath)
   return (
     <Wrapper {...wrapperProps}>
-      <MDXContent {...props} params={{mdxPath}} />
+      {/* 4. INJETA os componentes no motor de renderização */}
+      <MDXContent components={components} />
     </Wrapper>
-  )
+  );
 }

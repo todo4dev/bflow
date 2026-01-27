@@ -11,6 +11,7 @@ import (
 	"src/domain/repository"
 	"src/port/broker"
 	"src/port/cache"
+	"src/port/interpolate"
 	"src/port/logger"
 	"src/port/mailing"
 
@@ -34,26 +35,29 @@ func (d *Data) Validate() error {
 }
 
 type Handler struct {
-	repositoryAccount repository.Account
-	mailingMailer     mailing.Mailer
-	loggerClient      logger.Client
-	brokerPublisher   broker.Client
-	cacheClient       cache.Client
+	repositoryAccount   repository.Account
+	mailingMailer       mailing.Mailer
+	interpolateRenderer interpolate.Renderer
+	loggerClient        logger.Client
+	brokerPublisher     broker.Client
+	cacheClient         cache.Client
 }
 
 func New(
 	repositoryAccount repository.Account,
 	mailingMailer mailing.Mailer,
+	interpolateRenderer interpolate.Renderer,
 	loggerClient logger.Client,
 	brokerPublisher broker.Client,
 	cacheClient cache.Client,
 ) *Handler {
 	return &Handler{
-		repositoryAccount: repositoryAccount,
-		mailingMailer:     mailingMailer,
-		loggerClient:      loggerClient,
-		brokerPublisher:   brokerPublisher,
-		cacheClient:       cacheClient,
+		repositoryAccount:   repositoryAccount,
+		mailingMailer:       mailingMailer,
+		interpolateRenderer: interpolateRenderer,
+		loggerClient:        loggerClient,
+		brokerPublisher:     brokerPublisher,
+		cacheClient:         cacheClient,
 	}
 }
 
@@ -83,11 +87,17 @@ func (h *Handler) recreateOTP(ctx context.Context, accountID uuid.UUID) (string,
 func (h *Handler) sendActivationEmail(otp string, email string) {
 	go func() {
 		ctx := context.Background()
-		err := h.mailingMailer.Send(ctx, mailing.Email{
-			To:        []string{email},
-			Subject:   "Activate your account",
-			Template:  "activate.html",
-			Variables: map[string]any{"otp": otp}})
+		body, err := h.interpolateRenderer.Render("activate.html", map[string]any{"otp": otp})
+		if err != nil {
+			msg := fmt.Sprintf("failed to render activation email for %s", email)
+			h.loggerClient.Error(ctx, msg, err)
+			return
+		}
+
+		err = h.mailingMailer.Send(ctx, mailing.Email{
+			To:      []string{email},
+			Subject: "Activate your account",
+			Html:    body})
 		if err != nil {
 			msg := fmt.Sprintf("failed to send activation email to %s", email)
 			h.loggerClient.Error(ctx, msg, err)

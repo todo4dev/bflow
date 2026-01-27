@@ -1,8 +1,8 @@
 // next.config.ts
-import nextra from 'nextra'
+import nextra from 'nextra';
 
-const withNextra = nextra({})
+const withNextra = nextra({});
 
 export default withNextra({
-  turbopack: {resolveAlias: {'next-mdx-import-source-file': './src/mdx-components.tsx'}}
-})
+  turbopack: {resolveAlias: {'next-mdx-import-source-file': './src/mdx-components.tsx'}},
+});

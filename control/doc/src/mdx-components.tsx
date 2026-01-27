@@ -1,10 +1,25 @@
+// src/mdx-components.tsx
+import {MermaidZoom} from '@/components/molecules/MermaidZoom';
 import {useMDXComponents as getThemeComponents} from 'nextra-theme-docs';
 
-const themeComponents = getThemeComponents()
+export function useMDXComponents(components: any): any {
+  const themeComponents = getThemeComponents();
+  const NextraMermaid = (themeComponents as any).Mermaid;
 
-export function useMDXComponents(components?: Record<string, unknown>) {
+  const CustomMermaid = (props: any) => (
+    <MermaidZoom>{NextraMermaid ? <NextraMermaid {...props} /> : <div className="mermaid" {...props} />}</MermaidZoom>
+  );
+
   return {
     ...themeComponents,
-    ...components
-  }
+    ...components,
+    Mermaid: CustomMermaid,
+    mermaid: CustomMermaid,
+    pre: (props: any) => {
+      if (props['data-language'] === 'mermaid' || props.children?.props?.className?.includes('language-mermaid')) {
+        return <CustomMermaid {...props} />;
+      }
+      return themeComponents.pre ? <themeComponents.pre {...props} /> : <pre {...props} />;
+    },
+  };
 }

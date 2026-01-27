@@ -1,9 +1,10 @@
-import {MetaRecord} from 'nextra';
+import {type MetaRecord} from 'nextra';
 
 const meta: MetaRecord = {
   index: 'Home',
-  'usecase-header': {type: "separator", title: "Use Cases"},
-  'use-cases-api': "API",
-}
+  'api-use-cases-header': {type: 'separator', title: 'API - Use Cases'},
+  auth: 'Authentication',
+  system: 'System',
+};
 
 export default meta;

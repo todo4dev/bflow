@@ -20,6 +20,18 @@ description: Redirects the user to the SSO provider authentication page.
 | `provider`     | path  | string | Yes      | The SSO provider (`google` or `microsoft`).         |
 | `callback_url` | query | string | Yes      | The URL to redirect back to after SSO flow completes. |
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Get OIDC Adapter"}
+    D -- "Failed" --> E(["Return Error"])
+    D -- "Success" --> F["Generate Auth URL"]
+    F --> G(["Return URL"])
+```
+
 ## Success Case
 
 **Status**: `302 Found`

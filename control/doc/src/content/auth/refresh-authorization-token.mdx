@@ -28,6 +28,25 @@ This use case allows a user to refresh their authorization token using a valid r
 }
 ```
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Decode Refresh Token"}
+    D -- "Invalid/Mistyped" --> E(["Return AccountInvalidToken"])
+    D -- "Valid" --> F{"Get Session from Cache"}
+    F -- "Not Found" --> G(["Return AccountSessionExpired"])
+    F -- "Found" --> H{"Verify Session Expiration"}
+    H -- "Expired" --> I(["Delete Session & Return Expired"])
+    H -- "Valid" --> J["Extend Session TTL"]
+    J --> K{"Get Account & Profile"}
+    K -- "NotFound/Deleted" --> L(["Return InvalidToken/Deactivated"])
+    K -- "Found" --> M["Generate New JWT Pair"]
+    M --> N(["Return Token Response"])
+```
+
 ## Response
 
 ### Success (200 OK)

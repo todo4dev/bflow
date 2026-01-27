@@ -26,6 +26,17 @@ This endpoint checks if the provided email address is already associated with an
   |-----------|--------|----------|----------|---------------------------------|
   | email     | string | path     | Yes      | The email address to check.     |
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Check if Email Exists"}
+    D -- "Yes" --> E(["Return EmailInUse"])
+    D -- "No" --> F(["Return Success"])
+```
+
 ## Success Case
 
 **Condition:** The email is not associated with any account.

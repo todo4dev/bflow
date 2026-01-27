@@ -11,12 +11,11 @@ import (
 
 func Provide() {
 	config := Config{
-		Host:         env.Get("API_MAILING_SMTP_HOST", "localhost"),
-		Port:         env.Get("API_MAILING_SMTP_PORT", 587),
-		Username:     env.Get("API_MAILING_SMTP_USERNAME", ""),
-		Password:     env.Get("API_MAILING_SMTP_PASSWORD", ""),
-		FromAddress:  env.Get("API_MAILING_SMTP_FROM", "noreply@bflow.dev"),
-		TemplatePath: env.Get("API_MAILING_SMTP_TEMPLATE_PATH", "./template"),
+		Host:        env.Get("API_MAILING_SMTP_HOST", "localhost"),
+		Port:        env.Get("API_MAILING_SMTP_PORT", 587),
+		Username:    env.Get("API_MAILING_SMTP_USERNAME", ""),
+		Password:    env.Get("API_MAILING_SMTP_PASSWORD", ""),
+		FromAddress: env.Get("API_MAILING_SMTP_FROM", "noreply@bflow.dev"),
 	}
 	if err := config.Validate(); err != nil {
 		panic(fmt.Errorf("mailer config validation failed: %w", err))

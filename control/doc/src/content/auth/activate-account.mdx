@@ -1,3 +1,4 @@
+
 ---
 title: Activate Account
 ---
@@ -36,6 +37,23 @@ This endpoint activates a user's account by verifying the One-Time Password (OTP
   "email": "john.doe@email.com",
   "otp": "123456"
 }
+```
+
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Find OTP in Cache"}
+    D -- "Not Found" --> E(["Return AccountInvalidOTP"])
+    D -- "Found" --> F{"Find Account by Reference ID"}
+    F -- "Not Found" --> G(["Return AccountNotFound"])
+    F -- "Already Verified" --> H(["Return AccountAlreadyActivated"])
+    F -- "Found" --> I["Update Account Status"]
+    I --> J["Delete OTP from Cache (Async)"]
+    J --> K["Publish AccountActivated Event (Async)"]
+    K --> L(["Return Success"])
 ```
 
 ## Success Case

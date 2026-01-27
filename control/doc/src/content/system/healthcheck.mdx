@@ -1,3 +1,5 @@
+
+
 ---
 title: Healthcheck
 ---
@@ -23,6 +25,20 @@ This endpoint is used by load balancers, container orchestrators, and monitoring
 - The system must perform a connectivity check on the primary database.
 - The system must perform a connectivity check on the cache service.
 - If any critical dependency is unreachable, the system must report an unhealthy status.
+
+## Workflow
+
+<MermaidZoom>
+```mermaid
+graph TD
+    A(["Start"]) --> B["Loop Services"]
+    B --> C{"Ping Service"}
+    C -- "Error" --> D(["Return Error"])
+    C -- "Success" --> E{"More Services?"}
+    E -- "Yes" --> B
+    E -- "No" --> F(["Return Uptime"])
+```
+</MermaidZoom>
 
 ## Success Case
 

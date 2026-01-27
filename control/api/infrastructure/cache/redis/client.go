@@ -59,18 +59,6 @@ func (c *Client) Get(ctx context.Context, match string) (string, string, error) 
 	return key, val, nil
 }
 
-func (c *Client) GetBytes(ctx context.Context, match string) (string, []byte, error) {
-	key, err := c.findKey(ctx, match)
-	if err != nil {
-		return "", nil, err
-	}
-	val, err := c.client.Get(ctx, key).Bytes()
-	if err != nil {
-		return "", nil, err
-	}
-	return key, val, nil
-}
-
 func (c *Client) Delete(ctx context.Context, keys ...string) error {
 	return c.client.Del(ctx, keys...).Err()
 }

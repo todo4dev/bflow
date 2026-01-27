@@ -7,6 +7,7 @@ import (
 	"src/infrastructure/crypto"
 	"src/infrastructure/database"
 	"src/infrastructure/image"
+	"src/infrastructure/interpolate"
 	"src/infrastructure/jwt"
 	"src/infrastructure/logger"
 	"src/infrastructure/mailing"
@@ -20,6 +21,7 @@ func Provide() {
 	crypto.Provide()
 	database.Provide()
 	image.Provide()
+	interpolate.Provide()
 	jwt.Provide()
 	logger.Provide()
 	mailing.Provide()

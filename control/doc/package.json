@@ -6,23 +6,37 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@theguild/remark-mermaid": "0.3.0",
+    "clsx": "2.1.1",
+    "mdx": "0.3.1",
     "next": "16.1.1",
     "nextra": "4.6.1",
     "nextra-theme-docs": "4.6.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-icons": "5.5.0",
+    "react-zoom-pan-pinch": "3.7.0",
+    "tailwind-merge": "3.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.2",
+    "@next/eslint-plugin-next": "16.1.4",
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/mdx": "2.0.13",
     "@types/node": "^25.0.8",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-n": "17.23.2",
+    "eslint-plugin-prettier": "5.5.5",
+    "globals": "17.1.0",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "8.53.1"
   }
 }

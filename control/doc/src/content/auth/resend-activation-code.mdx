@@ -36,6 +36,21 @@ This endpoint allows a user to request a new activation code if the previous one
 }
 ```
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Find Account"}
+    D -- "Not Found" --> E(["Return AccountNotFound"])
+    D -- "Already Active" --> F(["Return AccountAlreadyActivated"])
+    D -- "Found" --> G["Rotate OTP in Cache"]
+    G --> H["Send Activation Email (Async)"]
+    H --> I["Publish AccountActivated Event (Async)"]
+    I --> J(["Return Success"])
+```
+
 ## Success Case
 
 **Condition:** valid email, account exists and is not verified.

@@ -17,10 +17,8 @@ type Email struct {
 	CC          []string
 	BCC         []string
 	Subject     string
-	Body        string
-	HTMLBody    string
-	Template    string
-	Variables   map[string]any
+	Text        string
+	Html        string
 	Attachments []Attachment
 }
 
@@ -28,7 +26,4 @@ type Email struct {
 type Mailer interface {
 	// Send sends an email
 	Send(ctx context.Context, email Email) error
-
-	// SendBatch sends multiple emails
-	SendBatch(ctx context.Context, emails []Email) error
 }

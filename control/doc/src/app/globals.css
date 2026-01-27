@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* #region mermaid components */
+
+.mermaid-container .mermaid {
+  background: transparent !important;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid-container .mermaid svg {
+  height: auto !important;
+  max-width: none !important;
+}
+
+/* #endregion */
+
+/* #region nextra fixing components */
+
+.nextra-sidebar-footer {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* #endregion */

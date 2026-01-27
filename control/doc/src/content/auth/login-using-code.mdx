@@ -34,6 +34,22 @@ This endpoint exchanges the encrypted `code` (received via the SSO callback redi
 }
 ```
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Validate & Decrypt Code"}
+    D -- "Invalid/Expired" --> E(["Return AccountInvalidCredentials"])
+    D -- "Valid" --> F{"Find Account"}
+    F -- "Not Found/Deleted" --> G(["Return AccountInvalidCredentials/Deactivated"])
+    F -- "Found" --> H["Find Account Profile"]
+    H --> I["Create Account Session"]
+    I --> J["Generate JWT"]
+    J --> K(["Return Token Response"])
+```
+
 ## Success Case
 
 **Condition:** valid code, account is active.

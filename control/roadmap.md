@@ -22,12 +22,13 @@ O agente deve solicitar ao usuário qual o próximo caso de uso a ser implementa
 
 Com base no caso de uso definido, o agente deve **inferir** a documentação da API seguindo o padrão existente em @[control/doc].
 
-*   **Localização**: `control/doc/src/content/use-cases-api/<context>/<use-case>.mdx`
+*   **Localização**: `control/doc/src/content/use-cases-(api|web)/<context>/<use-case>.mdx`
 *   **Formato**: MDX com Frontmatter.
 *   **Estrutura Esperada**:
     *   Título e Descrição.
     *   Regras e Validações.
     *   Request (Método, Path, Parâmetros).
+    *   Diagrama Mermaid do fluxo de execução do caso de uso com base no contexto. (nota: todos os textos dentro do markdown precisam estar em aspas duplas pra evitar erros de formatação no mermaid)
     *   Success Case (Status, Body).
     *   Error Case (Status, Body com código e mensagem).
 

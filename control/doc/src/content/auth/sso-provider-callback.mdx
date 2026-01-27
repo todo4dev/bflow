@@ -35,6 +35,31 @@ This endpoint is the callback target for OIDC providers. It processes the author
 | error | Query | string | Error code from provider | No |
 | error_description| Query | string | Error description from provider | No |
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Get OIDC Adapter"}
+    D --> E{"Get Callback URL from State"}
+    E -- "Invalid" --> F(["Return AccountInvalidSSOCallback"])
+    E -- "Valid" --> G{"Check Provider Error"}
+    G -- "Error Present" --> H(["Redirect with Error"])
+    G -- "No Error" --> I["Exchange Code for Tokens"]
+    I -- "Failed" --> J(["Redirect with 'exchange_failed'"])
+    I -- "Success" --> K["Get User Info"]
+    K -- "Failed" --> L(["Redirect with 'user_info_failed'"])
+    K -- "Success" --> M["Transaction: Create/Update Account"]
+    M --> N{"New Account?"}
+    N -- "Yes" --> O["Publish AccountRegistered Event"]
+    N -- "No" --> P["Continue"]
+    O --> P
+    P --> Q["Process Profile Picture (Download/Resize/Upload)"]
+    Q --> R["Encrypt Login Code"]
+    R --> S(["Redirect with Encrypted Code"])
+```
+
 ## Success Response
 
 **Status**: `307 Temporary Redirect`

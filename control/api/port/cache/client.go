@@ -14,9 +14,6 @@ type Client interface {
 	// Get retrieves a value
 	Get(ctx context.Context, match string) (key string, value string, err error)
 
-	// GetBytes retrieves bytes
-	GetBytes(ctx context.Context, match string) (key string, value []byte, err error)
-
 	// Delete removes a key
 	Delete(ctx context.Context, matches ...string) error
 

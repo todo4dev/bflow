@@ -11,6 +11,7 @@ import (
 	"src/domain/issue"
 	"src/domain/repository"
 	"src/port/cache"
+	"src/port/interpolate"
 	"src/port/jwt"
 	"src/port/logger"
 	"src/port/mailing"
@@ -52,6 +53,7 @@ type Handler struct {
 	jwtProvider                 jwt.Provider
 	cacheClient                 cache.Client
 	mailingMailer               mailing.Mailer
+	interpolateRenderer         interpolate.Renderer
 	loggerClient                logger.Client
 }
 
@@ -62,6 +64,7 @@ func New(
 	jwtProvider jwt.Provider,
 	cacheClient cache.Client,
 	mailingMailer mailing.Mailer,
+	interpolateRenderer interpolate.Renderer,
 	loggerClient logger.Client,
 ) *Handler {
 	return &Handler{
@@ -71,6 +74,7 @@ func New(
 		jwtProvider:                 jwtProvider,
 		cacheClient:                 cacheClient,
 		mailingMailer:               mailingMailer,
+		interpolateRenderer:         interpolateRenderer,
 		loggerClient:                loggerClient,
 	}
 }
@@ -130,11 +134,17 @@ func (h *Handler) setActivationKey(ctx context.Context, account *entity.Account)
 func (h *Handler) sendActivationEmail(account *entity.Account, otp string) {
 	go func() {
 		ctx := context.Background()
-		err := h.mailingMailer.Send(ctx, mailing.Email{
-			To:        []string{account.Email},
-			Subject:   "Activate your account",
-			Template:  "activate.html",
-			Variables: map[string]any{"otp": otp},
+		body, err := h.interpolateRenderer.Render("activate.html", map[string]any{"otp": otp})
+		if err != nil {
+			msg := fmt.Sprintf("failed to render activation email for %s", account.Email)
+			h.loggerClient.Error(ctx, msg, err)
+			return
+		}
+
+		err = h.mailingMailer.Send(ctx, mailing.Email{
+			To:      []string{account.Email},
+			Subject: "Activate your account",
+			Html:    body,
 		})
 		if err != nil {
 			msg := fmt.Sprintf("failed to send activation email to %s", account.Email)

@@ -43,6 +43,23 @@ This endpoint allows a user to register a new account. It validates the email an
 }
 ```
 
+## Workflow
+
+```mermaid
+graph TD
+    A(["Start"]) --> B{"Validate Input"}
+    B -- "Invalid" --> C(["Return ValidationError"])
+    B -- "Valid" --> D{"Check Email Availability"}
+    D -- "In Use" --> E(["Return EmailInUse"])
+    D -- "Available" --> F["Hash Password"]
+    F --> G["Transaction: Create Account, Credential, Profile, Prefs"]
+    G --> H["Generate Activation OTP"]
+    H --> I["Store OTP in Cache"]
+    I --> J["Send Activation Email (Async)"]
+    J --> K["Publish AccountRegistered Event (Async)"]
+    K --> L(["Return Success"])
+```
+
 ## Success Case
 
 **Condition:** valid email and password, email not in use.
